@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>quadrotor_problem &mdash; REVISE 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=f6245a2f"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            REVISE
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">REVISE</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">quadrotor_problem</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for quadrotor_problem</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<div class="viewcode-block" id="Problem"><a class="viewcode-back" href="../index.html#quadrotor_problem.Problem">[docs]</a><span class="k">class</span> <span class="nc">Problem</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">mean_dynamics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">stochastic_dynamics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">stochastic_dynamics_known_w</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_A</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_B</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_G</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_state_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+    
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_control_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_mean_W</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_cov_W</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_i</span><span class="p">,</span> <span class="n">x_j</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">get_block_A</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">):</span>
+        <span class="n">state_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_size</span>
+        <span class="n">block_A_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(((</span><span class="n">n_steps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">state_size</span><span class="p">,</span> <span class="n">state_size</span><span class="p">))</span>
+
+        <span class="n">block_A_mat</span><span class="p">[:</span><span class="n">state_size</span><span class="p">,</span> <span class="p">:</span><span class="n">state_size</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">state_size</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_steps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">block_A_mat</span><span class="p">[</span><span class="n">state_size</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="n">state_size</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_A</span><span class="p">()</span><span class="nd">@block_A_mat</span><span class="p">[</span><span class="n">state_size</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span><span class="n">state_size</span><span class="o">*</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
+
+        <span class="k">return</span> <span class="n">block_A_mat</span>
+
+    <span class="k">def</span> <span class="nf">get_block_B</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">):</span>
+        <span class="n">state_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_size</span>
+        <span class="n">control_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">control_size</span>
+
+        <span class="n">block_B_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(((</span><span class="n">n_steps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">state_size</span><span class="p">,</span> <span class="n">n_steps</span><span class="o">*</span><span class="n">control_size</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_steps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">block_B_mat</span><span class="p">[</span><span class="n">state_size</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="n">state_size</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_A</span><span class="p">()</span><span class="nd">@block_B_mat</span><span class="p">[</span><span class="n">state_size</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span><span class="n">state_size</span><span class="o">*</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">block_B_mat</span><span class="p">[</span><span class="n">state_size</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="n">state_size</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">control_size</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span><span class="n">control_size</span><span class="o">*</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_B</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">block_B_mat</span>
+
+    <span class="k">def</span> <span class="nf">get_block_G</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">):</span>
+        <span class="n">state_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_size</span>
+        <span class="n">disturbance_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">disturbance_size</span>
+
+        <span class="n">block_G_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(((</span><span class="n">n_steps</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">state_size</span><span class="p">,</span> <span class="p">(</span><span class="n">n_steps</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">disturbance_size</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_steps</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">block_G_mat</span><span class="p">[</span><span class="n">state_size</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="n">state_size</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_A</span><span class="p">()</span><span class="nd">@block_G_mat</span><span class="p">[</span><span class="n">state_size</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span><span class="n">state_size</span><span class="o">*</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">block_G_mat</span><span class="p">[</span><span class="n">state_size</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="n">state_size</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">disturbance_size</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span><span class="n">disturbance_size</span><span class="o">*</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_G</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">block_G_mat</span>
+
+    <span class="k">def</span> <span class="nf">get_block_W</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">):</span>
+        <span class="n">disturbance_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">disturbance_size</span>
+        <span class="n">block_W_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(((</span><span class="n">n_steps</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">disturbance_size</span><span class="p">,</span> <span class="p">(</span><span class="n">n_steps</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">disturbance_size</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_steps</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">n_steps</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">x_i</span> <span class="o">=</span> <span class="n">x_traj</span><span class="p">[:,</span> <span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">x_j</span> <span class="o">=</span> <span class="n">x_traj</span><span class="p">[:,</span> <span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">block_W_ij</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cov_W</span><span class="p">(</span><span class="n">x_i</span><span class="p">,</span> <span class="n">x_j</span><span class="p">)</span> 
+                <span class="n">block_W_mat</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">disturbance_size</span><span class="p">:(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">disturbance_size</span><span class="p">,</span> <span class="n">j</span><span class="o">*</span><span class="n">disturbance_size</span><span class="p">:(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">disturbance_size</span><span class="p">]</span> <span class="o">=</span> <span class="n">block_W_ij</span>
+        <span class="n">block_W_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">block_W_mat</span><span class="p">)</span>
+        <span class="n">block_W_mat</span> <span class="o">=</span> <span class="n">block_W_mat</span> <span class="o">+</span> <span class="n">block_W_mat</span><span class="o">.</span><span class="n">T</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">block_W_mat</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">block_W_mat</span>
+
+    <span class="k">def</span> <span class="nf">get_A_B_G_W</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_0</span><span class="p">,</span> <span class="n">u_traj</span><span class="p">):</span>
+        <span class="n">n_steps</span> <span class="o">=</span> <span class="n">u_traj</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">x_traj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">state_size</span><span class="p">,</span> <span class="n">n_steps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">x_traj</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_steps</span><span class="p">):</span>
+            <span class="n">x_traj</span><span class="p">[:,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_dynamics</span><span class="p">(</span><span class="n">x_traj</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">u_traj</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span>
+
+        <span class="n">A</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_block_A</span><span class="p">(</span><span class="n">n_steps</span><span class="p">)</span>
+        <span class="n">B</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_block_B</span><span class="p">(</span><span class="n">n_steps</span><span class="p">)</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_block_G</span><span class="p">(</span><span class="n">n_steps</span><span class="p">)</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_block_W</span><span class="p">(</span><span class="n">x_traj</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">)</span>
+        <span class="n">mean_W</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mean_W</span><span class="p">(</span><span class="n">x_traj</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">mean_W</span><span class="p">,</span> <span class="n">W</span></div>
+
+<div class="viewcode-block" id="Quadrotor2DGRF"><a class="viewcode-back" href="../index.html#quadrotor_problem.Quadrotor2DGRF">[docs]</a><span class="k">class</span> <span class="nc">Quadrotor2DGRF</span><span class="p">(</span><span class="n">Problem</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">obstacles</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dt</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dt</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dt</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="n">dt</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">dt</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">dt</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">dt</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wind_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wind_var</span> <span class="o">=</span> <span class="mf">0.2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_velocity</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_acceleration</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_radius_lims</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span> <span class="o">-</span><span class="mi">25</span><span class="p">,</span> <span class="o">-</span><span class="mi">25</span><span class="p">]),</span>
+                                   <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">])]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proximity_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="mf">2.5</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="mf">2.5</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="mi">25</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="mi">25</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_position</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_position</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_size</span> <span class="o">=</span> <span class="mi">6</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">control_size</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disturbance_size</span> <span class="o">=</span> <span class="mi">2</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">obstacles</span> <span class="o">=</span> <span class="n">obstacles</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grf_cov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grf_cov</span><span class="p">()</span>
+        <span class="n">x_circle</span><span class="p">,</span> <span class="n">y_circle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_circle_wind</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grf_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xy_to_wind_profile</span><span class="p">(</span><span class="n">x_circle</span><span class="p">,</span> <span class="n">y_circle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grf_vel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_grf</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grf_vel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grf_vel</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wind_profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grf_vel</span>
+
+    <span class="k">def</span> <span class="nf">mean_dynamics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+        <span class="n">wind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_wind_at_location</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">grf_mean</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="nd">@x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="nd">@u</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="nd">@wind</span>
+
+    <span class="k">def</span> <span class="nf">stochastic_dynamics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+        <span class="n">wind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_wind_at_location</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">wind_profile</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="nd">@x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="nd">@u</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="nd">@wind</span>
+            
+    <span class="k">def</span> <span class="nf">stochastic_dynamics_known_w</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">wind_profile</span><span class="p">):</span>
+        <span class="n">wind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_wind_at_location</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">wind_profile</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="nd">@x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="nd">@u</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="nd">@wind</span>
+
+    <span class="k">def</span> <span class="nf">get_A</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span>
+        
+    <span class="k">def</span> <span class="nf">get_B</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span>
+        
+    <span class="k">def</span> <span class="nf">get_G</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span>
+
+    <span class="k">def</span> <span class="nf">get_state_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">beta_x_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">max_velocity</span><span class="p">,</span> 
+                               <span class="bp">self</span><span class="o">.</span><span class="n">max_velocity</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">max_velocity</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">max_velocity</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">max_acceleration</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">max_acceleration</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">max_acceleration</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">max_acceleration</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">min_position</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">min_position</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">max_position</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">max_position</span><span class="p">])</span>
+        <span class="n">epsilon_x_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="mi">1</span><span class="o">-</span><span class="mf">0.9973</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> 
+                                  <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mf">0.9973</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                  <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mf">0.9973</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                  <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mf">0.9973</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                  <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mf">0.9973</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                  <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mf">0.9973</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                  <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mf">0.9973</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                  <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mf">0.9973</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                  <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mf">0.9973</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                  <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mf">0.9973</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                  <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mf">0.9973</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                  <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mf">0.9973</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">alpha_x_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="n">alpha_x_mat</span><span class="p">,</span> <span class="n">beta_x_mat</span><span class="p">,</span> <span class="n">epsilon_x_mat</span>
+
+    <span class="k">def</span> <span class="nf">get_control_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">alpha_u_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="n">epsilon_u_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="n">beta_u_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="k">return</span> <span class="n">alpha_u_mat</span><span class="p">,</span> <span class="n">beta_u_mat</span><span class="p">,</span> <span class="n">epsilon_u_mat</span>
+
+    <span class="k">def</span> <span class="nf">get_mean_W</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">):</span>
+        <span class="n">disturbance_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">disturbance_size</span>
+        <span class="n">n_steps</span> <span class="o">=</span> <span class="n">x_traj</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">mean_W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_steps</span><span class="o">*</span><span class="n">disturbance_size</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_steps</span><span class="p">):</span>
+            <span class="n">mean_W</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">disturbance_size</span><span class="p">:(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">disturbance_size</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_wind_at_location</span><span class="p">(</span><span class="n">x_traj</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="n">x_traj</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">grf_mean</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mean_W</span>
+
+    <span class="k">def</span> <span class="nf">get_cov_W</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_i</span><span class="p">,</span> <span class="n">x_j</span><span class="p">):</span>
+        <span class="c1"># Get covariance of w(x_i) and w(x_j)</span>
+        <span class="n">cov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_wind_covariance_at_locations</span><span class="p">(</span><span class="n">x_i</span><span class="p">,</span> <span class="n">x_j</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grf_cov</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cov</span>
+
+    <span class="k">def</span> <span class="nf">get_mean_disturbance_at_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">5</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="mi">5</span><span class="p">)</span><span class="o">/</span><span class="mi">4</span>
+
+    <span class="k">def</span> <span class="nf">generate_circle_wind</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">x_profile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">11</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
+        <span class="n">y_profile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">11</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">):</span>
+                <span class="n">x_profile</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">y_profile</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mean_disturbance_at_location</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x_profile</span><span class="p">,</span> <span class="n">y_profile</span>
+
+    <span class="k">def</span> <span class="nf">xy_to_wind_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_profile</span><span class="p">,</span> <span class="n">y_profile</span><span class="p">):</span>
+        <span class="n">wind_profile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">242</span><span class="p">,)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">):</span>
+                <span class="n">wind_profile</span><span class="p">[</span><span class="mi">22</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_profile</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+                <span class="n">wind_profile</span><span class="p">[</span><span class="mi">22</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_profile</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">wind_profile</span>
+
+    <span class="k">def</span> <span class="nf">resample_grf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grf_vel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_grf</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grf_vel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grf_vel</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wind_profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grf_vel</span>
+
+    <span class="k">def</span> <span class="nf">grf_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_1</span><span class="p">,</span> <span class="n">x_2</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">obstacles</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wind_var</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">obstacles</span> <span class="o">==</span> <span class="s2">&quot;center&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="mi">3</span> <span class="o">&lt;</span> <span class="n">x_1</span> <span class="ow">and</span> <span class="n">x_1</span> <span class="o">&lt;</span> <span class="mi">7</span> <span class="ow">and</span> <span class="mi">3</span> <span class="o">&lt;</span> <span class="n">x_2</span> <span class="ow">and</span> <span class="n">x_2</span> <span class="o">&lt;</span> <span class="mi">7</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">30</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">wind_var</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wind_var</span>
+
+    <span class="k">def</span> <span class="nf">grf_corr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_1</span><span class="p">,</span> <span class="n">x_2</span><span class="p">,</span> <span class="n">x_3</span><span class="p">,</span> <span class="n">x_4</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">x_1</span> <span class="o">==</span> <span class="n">x_3</span> <span class="ow">and</span> <span class="n">x_2</span> <span class="o">==</span> <span class="n">x_4</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1</span>
+
+        <span class="n">corr</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.3</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">x_1</span> <span class="o">-</span> <span class="n">x_3</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">x_2</span> <span class="o">-</span> <span class="n">x_4</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="mi">10</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
+        <span class="n">corr</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">corr</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">corr</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="n">corr</span> <span class="o">&lt;=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">corr</span>
+
+    <span class="k">def</span> <span class="nf">grf_cov</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cov_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">242</span><span class="p">,</span> <span class="mi">242</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">x_1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">x_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">x_3</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x_1</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">x_4</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x_2</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                        <span class="n">corr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grf_corr</span><span class="p">(</span><span class="n">x_1</span><span class="p">,</span> <span class="n">x_2</span><span class="p">,</span> <span class="n">x_3</span><span class="p">,</span> <span class="n">x_4</span><span class="p">)</span>
+                        <span class="n">var_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grf_var</span><span class="p">(</span><span class="n">x_1</span><span class="p">,</span> <span class="n">x_2</span><span class="p">)</span>
+                        <span class="n">var_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grf_var</span><span class="p">(</span><span class="n">x_3</span><span class="p">,</span> <span class="n">x_4</span><span class="p">)</span>
+                        <span class="n">cov</span> <span class="o">=</span> <span class="n">corr</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var_1</span><span class="o">*</span><span class="n">var_2</span><span class="p">)</span>
+                        <span class="n">cov_mat</span><span class="p">[</span><span class="mi">22</span><span class="o">*</span><span class="n">x_1</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_2</span><span class="p">,</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_3</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_4</span><span class="p">]</span> <span class="o">=</span> <span class="n">cov</span>
+                        <span class="n">cov_mat</span><span class="p">[</span><span class="mi">22</span><span class="o">*</span><span class="n">x_3</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_4</span><span class="p">,</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_1</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cov</span>
+                        <span class="n">cov_mat</span><span class="p">[</span><span class="mi">22</span><span class="o">*</span><span class="n">x_1</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_3</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_4</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cov</span>
+                        <span class="n">cov_mat</span><span class="p">[</span><span class="mi">22</span><span class="o">*</span><span class="n">x_3</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_4</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_1</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cov</span>
+        <span class="n">cov_mat</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">cov_mat</span> <span class="o">+</span> <span class="n">cov_mat</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">242</span><span class="p">)</span><span class="o">*</span><span class="mf">1e-8</span>
+        <span class="k">return</span> <span class="n">cov_mat</span>
+
+    <span class="k">def</span> <span class="nf">sample_grf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grf_mean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grf_cov</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_samples</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_wind_at_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_1</span><span class="p">,</span> <span class="n">x_2</span><span class="p">,</span> <span class="n">wind_profile</span><span class="p">):</span>
+        <span class="n">x_1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_1</span><span class="p">))</span>
+        <span class="n">x_2</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_2</span><span class="p">))</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x_1</span><span class="p">)</span> <span class="o">-</span> <span class="n">x_1</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x_2</span><span class="p">)</span> <span class="o">-</span> <span class="n">x_2</span>
+        <span class="n">x_1_low</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x_1</span><span class="p">))</span>
+        <span class="n">x_1_high</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x_1</span><span class="p">))</span>
+        <span class="n">x_2_low</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x_2</span><span class="p">))</span>
+        <span class="n">x_2_high</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x_2</span><span class="p">))</span>
+
+        <span class="n">wind_x</span> <span class="o">=</span> <span class="n">a</span><span class="o">*</span><span class="n">b</span><span class="o">*</span><span class="n">wind_profile</span><span class="p">[</span><span class="mi">22</span><span class="o">*</span><span class="n">x_1_low</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_2_low</span><span class="p">]</span>
+        <span class="n">wind_x</span> <span class="o">+=</span> <span class="n">a</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">b</span><span class="p">)</span><span class="o">*</span><span class="n">wind_profile</span><span class="p">[</span><span class="mi">22</span><span class="o">*</span><span class="n">x_1_low</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_2_high</span><span class="p">]</span>
+        <span class="n">wind_x</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">a</span><span class="p">)</span><span class="o">*</span><span class="n">b</span><span class="o">*</span><span class="n">wind_profile</span><span class="p">[</span><span class="mi">22</span><span class="o">*</span><span class="n">x_1_high</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_2_low</span><span class="p">]</span>
+        <span class="n">wind_x</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">a</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">b</span><span class="p">)</span><span class="o">*</span><span class="n">wind_profile</span><span class="p">[</span><span class="mi">22</span><span class="o">*</span><span class="n">x_1_high</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_2_high</span><span class="p">]</span>
+
+        <span class="n">wind_y</span> <span class="o">=</span> <span class="n">a</span><span class="o">*</span><span class="n">b</span><span class="o">*</span><span class="n">wind_profile</span><span class="p">[</span><span class="mi">22</span><span class="o">*</span><span class="n">x_1_low</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_2_low</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">wind_y</span> <span class="o">+=</span> <span class="n">a</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">b</span><span class="p">)</span><span class="o">*</span><span class="n">wind_profile</span><span class="p">[</span><span class="mi">22</span><span class="o">*</span><span class="n">x_1_low</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_2_high</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">wind_y</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">a</span><span class="p">)</span><span class="o">*</span><span class="n">b</span><span class="o">*</span><span class="n">wind_profile</span><span class="p">[</span><span class="mi">22</span><span class="o">*</span><span class="n">x_1_high</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_2_low</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">wind_y</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">a</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">b</span><span class="p">)</span><span class="o">*</span><span class="n">wind_profile</span><span class="p">[</span><span class="mi">22</span><span class="o">*</span><span class="n">x_1_high</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_2_high</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">wind_x</span><span class="p">,</span> <span class="n">wind_y</span><span class="p">])</span>
+
+<div class="viewcode-block" id="Quadrotor2DGRF.get_wind_covariance_at_locations"><a class="viewcode-back" href="../index.html#quadrotor_problem.Quadrotor2DGRF.get_wind_covariance_at_locations">[docs]</a>    <span class="k">def</span> <span class="nf">get_wind_covariance_at_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_i</span><span class="p">,</span> <span class="n">x_j</span><span class="p">,</span> <span class="n">wind_cov</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        x_i and x_j are two different states.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">a_i</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x_i</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">x_i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">b_i</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x_i</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">x_i</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">a_j</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x_j</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">x_j</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">b_j</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x_j</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">x_j</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">x_i_1_low</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x_i</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">x_i_1_high</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x_i</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">x_i_2_low</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x_i</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">x_i_2_high</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x_i</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="n">x_i_1_low</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_i_1_low</span><span class="p">))</span>
+        <span class="n">x_i_1_high</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_i_1_high</span><span class="p">))</span>
+        <span class="n">x_i_2_low</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_i_2_low</span><span class="p">))</span>
+        <span class="n">x_i_2_high</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_i_2_high</span><span class="p">))</span>
+
+        <span class="n">x_j_1_low</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x_j</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">x_j_1_high</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x_j</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">x_j_2_low</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x_j</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">x_j_2_high</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x_j</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="n">x_j_1_low</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_j_1_low</span><span class="p">))</span>
+        <span class="n">x_j_1_high</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_j_1_high</span><span class="p">))</span>
+        <span class="n">x_j_2_low</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_j_2_low</span><span class="p">))</span>
+        <span class="n">x_j_2_high</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_j_2_high</span><span class="p">))</span>
+
+        <span class="n">cov_x_i_wts</span> <span class="o">=</span> <span class="p">[(</span><span class="n">a_i</span><span class="o">*</span><span class="n">b_i</span><span class="p">,</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_i_1_low</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_i_2_low</span><span class="p">),</span>
+                       <span class="p">(</span><span class="n">a_i</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">b_i</span><span class="p">),</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_i_1_low</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_i_2_high</span><span class="p">),</span>
+                       <span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">a_i</span><span class="p">)</span><span class="o">*</span><span class="n">b_i</span><span class="p">,</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_i_1_high</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_i_2_low</span><span class="p">),</span>
+                       <span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">a_i</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">b_i</span><span class="p">),</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_i_1_high</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_i_2_high</span><span class="p">)]</span>
+        <span class="n">cov_x_j_wts</span> <span class="o">=</span> <span class="p">[(</span><span class="n">a_j</span><span class="o">*</span><span class="n">b_j</span><span class="p">,</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_j_1_low</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_j_2_low</span><span class="p">),</span>
+                       <span class="p">(</span><span class="n">a_j</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">b_j</span><span class="p">),</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_j_1_low</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_j_2_high</span><span class="p">),</span>
+                       <span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">a_j</span><span class="p">)</span><span class="o">*</span><span class="n">b_j</span><span class="p">,</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_j_1_high</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_j_2_low</span><span class="p">),</span>
+                       <span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">a_j</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">b_j</span><span class="p">),</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_j_1_high</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_j_2_high</span><span class="p">)]</span>
+        <span class="n">cov_y_i_wts</span> <span class="o">=</span> <span class="p">[(</span><span class="n">a_i</span><span class="o">*</span><span class="n">b_i</span><span class="p">,</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_i_1_low</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_i_2_low</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                       <span class="p">(</span><span class="n">a_i</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">b_i</span><span class="p">),</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_i_1_low</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_i_2_high</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                       <span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">a_i</span><span class="p">)</span><span class="o">*</span><span class="n">b_i</span><span class="p">,</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_i_1_high</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_i_2_low</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                       <span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">a_i</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">b_i</span><span class="p">),</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_i_1_high</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_i_2_high</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="n">cov_y_j_wts</span> <span class="o">=</span> <span class="p">[(</span><span class="n">a_j</span><span class="o">*</span><span class="n">b_j</span><span class="p">,</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_j_1_low</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_j_2_low</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                       <span class="p">(</span><span class="n">a_j</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">b_j</span><span class="p">),</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_j_1_low</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_j_2_high</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                       <span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">a_j</span><span class="p">)</span><span class="o">*</span><span class="n">b_j</span><span class="p">,</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_j_1_high</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_j_2_low</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                       <span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">a_j</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">b_j</span><span class="p">),</span> <span class="mi">22</span><span class="o">*</span><span class="n">x_j_1_high</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_j_2_high</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+
+        <span class="n">cov_x</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">wt_i</span><span class="p">,</span> <span class="n">ind_i</span><span class="p">)</span> <span class="ow">in</span> <span class="n">cov_x_i_wts</span><span class="p">:</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">wt_j</span><span class="p">,</span> <span class="n">ind_j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">cov_x_j_wts</span><span class="p">:</span>
+                <span class="n">cov_x</span> <span class="o">+=</span> <span class="n">wt_i</span><span class="o">*</span><span class="n">wind_cov</span><span class="p">[</span><span class="n">ind_i</span><span class="p">,</span> <span class="n">ind_j</span><span class="p">]</span><span class="o">*</span><span class="n">wt_j</span>
+        <span class="n">cov_y</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">wt_i</span><span class="p">,</span> <span class="n">ind_i</span><span class="p">)</span> <span class="ow">in</span> <span class="n">cov_y_i_wts</span><span class="p">:</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">wt_j</span><span class="p">,</span> <span class="n">ind_j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">cov_y_j_wts</span><span class="p">:</span>
+                <span class="n">cov_y</span> <span class="o">+=</span> <span class="n">wt_i</span><span class="o">*</span><span class="n">wind_cov</span><span class="p">[</span><span class="n">ind_i</span><span class="p">,</span> <span class="n">ind_j</span><span class="p">]</span><span class="o">*</span><span class="n">wt_j</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">cov_x</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                         <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">cov_y</span><span class="p">]])</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Alex Rose.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

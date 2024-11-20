@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Core Package &mdash; REVISE 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=f6245a2f"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            REVISE
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Core Package</a><ul>
+<li><a class="reference internal" href="#module-graph">Graph Representation</a><ul>
+<li><a class="reference internal" href="#graph.Edge"><code class="docutils literal notranslate"><span class="pre">Edge</span></code></a></li>
+<li><a class="reference internal" href="#graph.Graph"><code class="docutils literal notranslate"><span class="pre">Graph</span></code></a><ul>
+<li><a class="reference internal" href="#graph.Graph.add_edge"><code class="docutils literal notranslate"><span class="pre">Graph.add_edge()</span></code></a></li>
+<li><a class="reference internal" href="#graph.Graph.add_node"><code class="docutils literal notranslate"><span class="pre">Graph.add_node()</span></code></a></li>
+<li><a class="reference internal" href="#graph.Graph.deepcopy"><code class="docutils literal notranslate"><span class="pre">Graph.deepcopy()</span></code></a></li>
+<li><a class="reference internal" href="#graph.Graph.get_ancestors"><code class="docutils literal notranslate"><span class="pre">Graph.get_ancestors()</span></code></a></li>
+<li><a class="reference internal" href="#graph.Graph.get_children"><code class="docutils literal notranslate"><span class="pre">Graph.get_children()</span></code></a></li>
+<li><a class="reference internal" href="#graph.Graph.get_descendants"><code class="docutils literal notranslate"><span class="pre">Graph.get_descendants()</span></code></a></li>
+<li><a class="reference internal" href="#graph.Graph.get_goal_node"><code class="docutils literal notranslate"><span class="pre">Graph.get_goal_node()</span></code></a></li>
+<li><a class="reference internal" href="#graph.Graph.get_parent"><code class="docutils literal notranslate"><span class="pre">Graph.get_parent()</span></code></a></li>
+<li><a class="reference internal" href="#graph.Graph.get_plan_to_goal"><code class="docutils literal notranslate"><span class="pre">Graph.get_plan_to_goal()</span></code></a></li>
+<li><a class="reference internal" href="#graph.Graph.get_start_node"><code class="docutils literal notranslate"><span class="pre">Graph.get_start_node()</span></code></a></li>
+<li><a class="reference internal" href="#graph.Graph.look_up_by_mean"><code class="docutils literal notranslate"><span class="pre">Graph.look_up_by_mean()</span></code></a></li>
+<li><a class="reference internal" href="#graph.Graph.trim"><code class="docutils literal notranslate"><span class="pre">Graph.trim()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#graph.Node"><code class="docutils literal notranslate"><span class="pre">Node</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-math_utils">Math Utils</a><ul>
+<li><a class="reference internal" href="#math_utils.check_psd"><code class="docutils literal notranslate"><span class="pre">check_psd()</span></code></a></li>
+<li><a class="reference internal" href="#math_utils.ensure_psd"><code class="docutils literal notranslate"><span class="pre">ensure_psd()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-quadrotor_problem">Quadrotor</a><ul>
+<li><a class="reference internal" href="#quadrotor_problem.Problem"><code class="docutils literal notranslate"><span class="pre">Problem</span></code></a></li>
+<li><a class="reference internal" href="#quadrotor_problem.Quadrotor2DGRF"><code class="docutils literal notranslate"><span class="pre">Quadrotor2DGRF</span></code></a><ul>
+<li><a class="reference internal" href="#quadrotor_problem.Quadrotor2DGRF.get_wind_covariance_at_locations"><code class="docutils literal notranslate"><span class="pre">Quadrotor2DGRF.get_wind_covariance_at_locations()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-covariance_steering">Covariance Steering</a><ul>
+<li><a class="reference internal" href="#covariance_steering.EdgeController"><code class="docutils literal notranslate"><span class="pre">EdgeController</span></code></a></li>
+<li><a class="reference internal" href="#covariance_steering.baseline_covariance_steering"><code class="docutils literal notranslate"><span class="pre">baseline_covariance_steering()</span></code></a></li>
+<li><a class="reference internal" href="#covariance_steering.baseline_edge_controller"><code class="docutils literal notranslate"><span class="pre">baseline_edge_controller()</span></code></a></li>
+<li><a class="reference internal" href="#covariance_steering.get_E_k_u"><code class="docutils literal notranslate"><span class="pre">get_E_k_u()</span></code></a></li>
+<li><a class="reference internal" href="#covariance_steering.get_E_k_x"><code class="docutils literal notranslate"><span class="pre">get_E_k_x()</span></code></a></li>
+<li><a class="reference internal" href="#covariance_steering.get_lower_triangular_L"><code class="docutils literal notranslate"><span class="pre">get_lower_triangular_L()</span></code></a></li>
+<li><a class="reference internal" href="#covariance_steering.mean_steering"><code class="docutils literal notranslate"><span class="pre">mean_steering()</span></code></a></li>
+<li><a class="reference internal" href="#covariance_steering.nominal_rollout"><code class="docutils literal notranslate"><span class="pre">nominal_rollout()</span></code></a></li>
+<li><a class="reference internal" href="#covariance_steering.robust_sigma_point_covariance_steering"><code class="docutils literal notranslate"><span class="pre">robust_sigma_point_covariance_steering()</span></code></a></li>
+<li><a class="reference internal" href="#covariance_steering.robust_sigma_point_edge_controller"><code class="docutils literal notranslate"><span class="pre">robust_sigma_point_edge_controller()</span></code></a></li>
+<li><a class="reference internal" href="#covariance_steering.select_sigma_points"><code class="docutils literal notranslate"><span class="pre">select_sigma_points()</span></code></a></li>
+<li><a class="reference internal" href="#covariance_steering.zero_control_rollout"><code class="docutils literal notranslate"><span class="pre">zero_control_rollout()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-quadrotor_experiment">Belief Roadmap Generation</a><ul>
+<li><a class="reference internal" href="#quadrotor_experiment.add_node_and_rewire_roadmap"><code class="docutils literal notranslate"><span class="pre">add_node_and_rewire_roadmap()</span></code></a></li>
+<li><a class="reference internal" href="#quadrotor_experiment.add_node_to_roadmap"><code class="docutils literal notranslate"><span class="pre">add_node_to_roadmap()</span></code></a></li>
+<li><a class="reference internal" href="#quadrotor_experiment.construct_belief_roadmaps_and_rewire"><code class="docutils literal notranslate"><span class="pre">construct_belief_roadmaps_and_rewire()</span></code></a></li>
+<li><a class="reference internal" href="#quadrotor_experiment.construct_belief_roadmaps_to_goal_and_rewire"><code class="docutils literal notranslate"><span class="pre">construct_belief_roadmaps_to_goal_and_rewire()</span></code></a></li>
+<li><a class="reference internal" href="#quadrotor_experiment.get_nearest_nodes"><code class="docutils literal notranslate"><span class="pre">get_nearest_nodes()</span></code></a></li>
+<li><a class="reference internal" href="#quadrotor_experiment.get_roadmap_edge"><code class="docutils literal notranslate"><span class="pre">get_roadmap_edge()</span></code></a></li>
+<li><a class="reference internal" href="#quadrotor_experiment.get_root_filenames"><code class="docutils literal notranslate"><span class="pre">get_root_filenames()</span></code></a></li>
+<li><a class="reference internal" href="#quadrotor_experiment.multi_query_experiment"><code class="docutils literal notranslate"><span class="pre">multi_query_experiment()</span></code></a></li>
+<li><a class="reference internal" href="#quadrotor_experiment.multi_query_experimental_trial"><code class="docutils literal notranslate"><span class="pre">multi_query_experimental_trial()</span></code></a></li>
+<li><a class="reference internal" href="#quadrotor_experiment.randomize_candidate_mean"><code class="docutils literal notranslate"><span class="pre">randomize_candidate_mean()</span></code></a></li>
+<li><a class="reference internal" href="#quadrotor_experiment.save_roadmap"><code class="docutils literal notranslate"><span class="pre">save_roadmap()</span></code></a></li>
+<li><a class="reference internal" href="#quadrotor_experiment.single_query_experiment"><code class="docutils literal notranslate"><span class="pre">single_query_experiment()</span></code></a></li>
+<li><a class="reference internal" href="#quadrotor_experiment.single_query_experimental_trial"><code class="docutils literal notranslate"><span class="pre">single_query_experimental_trial()</span></code></a></li>
+<li><a class="reference internal" href="#quadrotor_experiment.update_node_and_descendants"><code class="docutils literal notranslate"><span class="pre">update_node_and_descendants()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">REVISE</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Core Package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="core-package">
+<h1>Core Package<a class="headerlink" href="#core-package" title="Permalink to this heading"></a></h1>
+<section id="module-graph">
+<span id="graph-representation"></span><h2>Graph Representation<a class="headerlink" href="#module-graph" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="graph.Edge">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">graph.</span></span><span class="sig-name descname"><span class="pre">Edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covariance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ff_ctrl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fb_ctrl</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/graph.html#Edge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graph.Edge" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents a directed edge in a belief roadmap between two
+Gaussian state distributions. Each edge is associated with a
+feedback control policy and a discrete-time Gaussian state
+trajectory between its start and end nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_node</strong> (<a class="reference internal" href="#graph.Node" title="graph.Node"><em>Node</em></a>) – Start node of the edge</p></li>
+<li><p><strong>end_node</strong> (<a class="reference internal" href="#graph.Node" title="graph.Node"><em>Node</em></a>) – End node of the edge</p></li>
+<li><p><strong>mean</strong> (<em>np.ndarray</em>) – Array of means of intermediate Gaussian states</p></li>
+<li><p><strong>covariance</strong> (<em>np.ndarray</em>) – Array of covariances of intermediate Gaussian states</p></li>
+<li><p><strong>ff_ctrl</strong> (<em>np.ndarray</em>) – Open-loop control between start and end nodes</p></li>
+<li><p><strong>fb_ctrl</strong> (<em>np.ndarray</em>) – Feedback control gain between start and end nodes</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="graph.Graph">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">graph.</span></span><span class="sig-name descname"><span class="pre">Graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edges</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/graph.html#Graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graph.Graph" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents a graph-structured belief roadmap, where the
+nodes in the roadmap are Gaussian distributions in the
+state space, and the directed edges in the roadmap are
+control policies steering between nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nodes</strong> (<em>set</em>) – Set of Node objects representing nodes</p></li>
+<li><p><strong>edges</strong> (<em>set</em>) – Set of Edge objects representing edges</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="graph.Graph.add_edge">
+<span class="sig-name descname"><span class="pre">add_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/graph.html#Graph.add_edge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graph.Graph.add_edge" title="Permalink to this definition"></a></dt>
+<dd><p>Add edge to the graph, assuming the start and end
+nodes of the edge are already in the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>edge</strong> (<a class="reference internal" href="#graph.Edge" title="graph.Edge"><em>Edge</em></a>) – Edge to be added to the graph.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="graph.Graph.add_node">
+<span class="sig-name descname"><span class="pre">add_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/graph.html#Graph.add_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graph.Graph.add_node" title="Permalink to this definition"></a></dt>
+<dd><p>Add node to the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>node</strong> (<a class="reference internal" href="#graph.Node" title="graph.Node"><em>Node</em></a>) – Node to be added to the graph.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="graph.Graph.deepcopy">
+<span class="sig-name descname"><span class="pre">deepcopy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/graph.html#Graph.deepcopy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graph.Graph.deepcopy" title="Permalink to this definition"></a></dt>
+<dd><p>Deepcopy graph to a new Graph object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>graph_copy</strong> – Deepcopy of self</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#graph.Graph" title="graph.Graph">Graph</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="graph.Graph.get_ancestors">
+<span class="sig-name descname"><span class="pre">get_ancestors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/graph.html#Graph.get_ancestors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graph.Graph.get_ancestors" title="Permalink to this definition"></a></dt>
+<dd><p>Get ancestors of a node in the graph, recursively,
+all the way back to the start node.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>node</strong> (<a class="reference internal" href="#graph.Node" title="graph.Node"><em>Node</em></a>) – Node to look up ancestors</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ancestors</strong> – Ancestors of node</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="graph.Graph.get_children">
+<span class="sig-name descname"><span class="pre">get_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/graph.html#Graph.get_children"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graph.Graph.get_children" title="Permalink to this definition"></a></dt>
+<dd><p>Get children of a node in the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>node</strong> (<a class="reference internal" href="#graph.Node" title="graph.Node"><em>Node</em></a>) – Node to look up children</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>children</strong> – Set of child nodes of node (can be empty)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="graph.Graph.get_descendants">
+<span class="sig-name descname"><span class="pre">get_descendants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/graph.html#Graph.get_descendants"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graph.Graph.get_descendants" title="Permalink to this definition"></a></dt>
+<dd><p>Get descendants of a node in the graph, recursively,
+all the way down to leaf nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>node</strong> (<a class="reference internal" href="#graph.Node" title="graph.Node"><em>Node</em></a>) – Node to find descendants of</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>descendants</strong> – Set of descendants of node</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="graph.Graph.get_goal_node">
+<span class="sig-name descname"><span class="pre">get_goal_node</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/graph.html#Graph.get_goal_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graph.Graph.get_goal_node" title="Permalink to this definition"></a></dt>
+<dd><p>Get the goal node in the graph. Throws an error unless
+exactly one goal node is in the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>goal_node</strong> – Goal node of the graph</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#graph.Node" title="graph.Node">Node</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="graph.Graph.get_parent">
+<span class="sig-name descname"><span class="pre">get_parent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/graph.html#Graph.get_parent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graph.Graph.get_parent" title="Permalink to this definition"></a></dt>
+<dd><p>Get the parent of a node in the graph. Throws
+an error if the node isn’t in the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> (<a class="reference internal" href="#graph.Node" title="graph.Node"><em>Node</em></a>) – Child node to look up parent</p></li>
+<li><p><strong>parent</strong> (<a class="reference internal" href="#graph.Node" title="graph.Node"><em>Node</em></a>) – Parent of child node (None if child is start)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="graph.Graph.get_plan_to_goal">
+<span class="sig-name descname"><span class="pre">get_plan_to_goal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/graph.html#Graph.get_plan_to_goal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graph.Graph.get_plan_to_goal" title="Permalink to this definition"></a></dt>
+<dd><p>Trace edges from start to goal, and extract
+planned control and state. Can probably be refactored
+to traverse over trimmed graph only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>u_traj</strong> (<em>list</em>) – List of planned open-loop control for each
+edge from start to goal</p></li>
+<li><p><strong>K_traj</strong> (<em>list</em>) – List of planned feedback control for each edge</p></li>
+<li><p><strong>x_traj</strong> (<em>list</em>) – List of mean state trajectory for each edge</p></li>
+<li><p><strong>P_traj</strong> (<em>list</em>) – List of state covariance for each edge</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="graph.Graph.get_start_node">
+<span class="sig-name descname"><span class="pre">get_start_node</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/graph.html#Graph.get_start_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graph.Graph.get_start_node" title="Permalink to this definition"></a></dt>
+<dd><p>Get the start node in the graph. Throws an error unless
+exactly one start node is in the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>start_node</strong> – Start node of the graph</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#graph.Node" title="graph.Node">Node</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="graph.Graph.look_up_by_mean">
+<span class="sig-name descname"><span class="pre">look_up_by_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_mean</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/graph.html#Graph.look_up_by_mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graph.Graph.look_up_by_mean" title="Permalink to this definition"></a></dt>
+<dd><p>Look up a node in a graph by its mean. Throws
+an error unless exactly one node with the given
+mean is in the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node_mean</strong> (<em>np.ndarray</em>) – Mean of node to look up</p></li>
+<li><p><strong>node</strong> (<a class="reference internal" href="#graph.Node" title="graph.Node"><em>Node</em></a>) – Node in graph with node_mean as its mean</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="graph.Graph.trim">
+<span class="sig-name descname"><span class="pre">trim</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/graph.html#Graph.trim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graph.Graph.trim" title="Permalink to this definition"></a></dt>
+<dd><p>Return minimal subgraph which connects the start node
+to the goal node. Assumes a path exists from the start
+to the goal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>trimmed_graph</strong> – Minimal subgraph connecting start to goal</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#graph.Graph" title="graph.Graph">Graph</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="graph.Node">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">graph.</span></span><span class="sig-name descname"><span class="pre">Node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covariance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_goal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/graph.html#Node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#graph.Node" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents a multidimensional Gaussian state distribution
+in a graph-structured belief roadmap.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mean</strong> (<em>np.ndarray</em>) – Mean of the Gaussian distribution</p></li>
+<li><p><strong>covariance</strong> (<em>np.ndarray</em>) – Covariance of the Gaussian distribution, must be PSD</p></li>
+<li><p><strong>is_start</strong> (<em>bool</em>) – True if start node, False otherwise</p></li>
+<li><p><strong>is_goal</strong> (<em>bool</em>) – True if goal node, False otherwise</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-math_utils">
+<span id="math-utils"></span><h2>Math Utils<a class="headerlink" href="#module-math_utils" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="math_utils.check_psd">
+<span class="sig-prename descclassname"><span class="pre">math_utils.</span></span><span class="sig-name descname"><span class="pre">check_psd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/math_utils.html#check_psd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#math_utils.check_psd" title="Permalink to this definition"></a></dt>
+<dd><p>Check if matrix is positive semidefinite by attempting
+Cholesky decomposition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>A</strong> (<em>np.ndarray</em>) – Matrix to check for positive semidefiniteness</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if A is PSD, False otherwise</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="math_utils.ensure_psd">
+<span class="sig-prename descclassname"><span class="pre">math_utils.</span></span><span class="sig-name descname"><span class="pre">ensure_psd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-09</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/math_utils.html#ensure_psd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#math_utils.ensure_psd" title="Permalink to this definition"></a></dt>
+<dd><p>Ensure matrix is positive semidefinite by adding I*eps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>A</strong> (<em>np.ndarray</em>) – Matrix which is within floating point error
+of having all positive eigenvalues</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>A_psd</strong> – A + I*1e-9</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-quadrotor_problem">
+<span id="quadrotor"></span><h2>Quadrotor<a class="headerlink" href="#module-quadrotor_problem" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="quadrotor_problem.Problem">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">quadrotor_problem.</span></span><span class="sig-name descname"><span class="pre">Problem</span></span><a class="reference internal" href="_modules/quadrotor_problem.html#Problem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_problem.Problem" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="quadrotor_problem.Quadrotor2DGRF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">quadrotor_problem.</span></span><span class="sig-name descname"><span class="pre">Quadrotor2DGRF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obstacles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'none'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_problem.html#Quadrotor2DGRF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_problem.Quadrotor2DGRF" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><code class="xref py py-class docutils literal notranslate"><span class="pre">Problem</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="quadrotor_problem.Quadrotor2DGRF.get_wind_covariance_at_locations">
+<span class="sig-name descname"><span class="pre">get_wind_covariance_at_locations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wind_cov</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_problem.html#Quadrotor2DGRF.get_wind_covariance_at_locations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_problem.Quadrotor2DGRF.get_wind_covariance_at_locations" title="Permalink to this definition"></a></dt>
+<dd><p>x_i and x_j are two different states.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covariance_steering">
+<span id="covariance-steering"></span><h2>Covariance Steering<a class="headerlink" href="#module-covariance_steering" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="covariance_steering.EdgeController">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">covariance_steering.</span></span><span class="sig-name descname"><span class="pre">EdgeController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance_steering.html#EdgeController"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#covariance_steering.EdgeController" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Enum representing choice of edge controller.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covariance_steering.baseline_covariance_steering">
+<span class="sig-prename descclassname"><span class="pre">covariance_steering.</span></span><span class="sig-name descname"><span class="pre">baseline_covariance_steering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_W</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_W</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_f</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance_steering.html#baseline_covariance_steering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#covariance_steering.baseline_covariance_steering" title="Permalink to this definition"></a></dt>
+<dd><p>Baseline covariance steering algorithm for steering in a Gaussian random field. Combines the
+coverage-maximizing objective from Aggarwal &amp; How 2024 with the approach to covariance
+steering in a GRF from Ridderhof &amp; Tsiotras 2022.</p>
+<p>This algorithm corresponds to Problem III.1 in the paper. See section III of the paper for
+additional details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with dynamics and constraints</p></li>
+<li><p><strong>A</strong> (<em>np.ndarray</em>) – State transition matrix, such that the open loop system dynamics in block-matrix
+notation are given by <span class="math notranslate nohighlight">\(X = Ax_0 + BU + GW\)</span></p></li>
+<li><p><strong>B</strong> (<em>np.ndarray</em>) – Control matrix in state-space dynamics, such that <span class="math notranslate nohighlight">\(X = AX_0 + BU + GW\)</span></p></li>
+<li><p><strong>G</strong> (<em>np.ndarray</em>) – Disturbance matrix in state-space dynamics, such that <span class="math notranslate nohighlight">\(X + AX_0 + BU + GW\)</span></p></li>
+<li><p><strong>mean_W</strong> (<em>np.ndarray</em>) – Mean of the Gaussian random field along x_nominal</p></li>
+<li><p><strong>cov_W</strong> (<em>np.ndarray</em>) – Covariance of the Gaussian random field along x_nominal</p></li>
+<li><p><strong>x_0</strong> (<em>np.ndarray</em>) – Mean of the initial state distribution</p></li>
+<li><p><strong>cov_0</strong> (<em>np.ndarray</em>) – Covariance of the initial state distribution</p></li>
+<li><p><strong>x_f</strong> (<em>np.ndarray</em>) – Desired mean of the final state distribution</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>success</strong> (<em>bool</em>) – True if MOSEK can solve the covariance steering problem, otherwise False</p></li>
+<li><p><strong>X_traj</strong> (<em>np.ndarray</em>) – State trajectory solution to covariance steering problem (or none if no solution)</p></li>
+<li><p><strong>U_traj</strong> (<em>np.ndarray</em>) – Nominal control trajectory solution to covariance steering problem (or None if no
+solution)</p></li>
+<li><p><strong>P_traj</strong> (<em>np.ndarray</em>) – State covariance trajectory solution to covariance steering problem (or None if
+no solution)</p></li>
+<li><p><strong>K</strong> (<em>np.ndarray</em>) – Control feedback gain solution to covariance steering problem (or None if no
+solution)</p></li>
+<li><p><strong>cov_f</strong> (<em>np.ndarray</em>) – Final state covariance (or None if no solution to covariance steering problem)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covariance_steering.baseline_edge_controller">
+<span class="sig-prename descclassname"><span class="pre">covariance_steering.</span></span><span class="sig-name descname"><span class="pre">baseline_edge_controller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance_steering.html#baseline_edge_controller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#covariance_steering.baseline_edge_controller" title="Permalink to this definition"></a></dt>
+<dd><p>Get a belief roadmap edge from <span class="math notranslate nohighlight">\(\mathcal{N}(\mathbf{x_0}, P_0)\)</span>
+to a distribution with mean <span class="math notranslate nohighlight">\(\mathbf{x_f}\)</span>, if such an edge
+exists, using <a class="reference internal" href="#covariance_steering.baseline_edge_controller" title="covariance_steering.baseline_edge_controller"><code class="xref py py-func docutils literal notranslate"><span class="pre">baseline_edge_controller()</span></code></a> as the edge controller.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with associated dynamics and constraints</p></li>
+<li><p><strong>x_0</strong> (<em>np.ndarray</em>) – Initial state mean</p></li>
+<li><p><strong>P_0</strong> (<em>np.ndarray</em>) – Initial state covariance</p></li>
+<li><p><strong>x_f</strong> (<em>np.ndarray</em>) – Final state mean</p></li>
+<li><p><strong>n_states</strong> (<em>int</em>) – State trajectory length</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>success</strong> (<em>bool</em>) – True iff valid edge found</p></li>
+<li><p><strong>x_traj</strong> (<em>np.ndarray</em>) – Mean state trajectory along edge, or None if no edge found</p></li>
+<li><p><strong>u_traj</strong> (<em>np.ndarray</em>) – Nominal control trajectory along edge, or None if no edge found</p></li>
+<li><p><strong>cov_traj</strong> (<em>np.ndarray</em>) – State covariance trajectory along edge, or None if no edge found</p></li>
+<li><p><strong>K</strong> (<em>np.ndarray</em>) – State feedback gain along edge, or None if no edge found</p></li>
+<li><p><strong>cov_f</strong> (<em>np.ndarray</em>) – Final state covariance, or None if no edge found</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covariance_steering.get_E_k_u">
+<span class="sig-prename descclassname"><span class="pre">covariance_steering.</span></span><span class="sig-name descname"><span class="pre">get_E_k_u</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_controls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance_steering.html#get_E_k_u"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#covariance_steering.get_E_k_u" title="Permalink to this definition"></a></dt>
+<dd><p>Get <span class="math notranslate nohighlight">\(E_k^u\)</span> such that <span class="math notranslate nohighlight">\(E_k^u \mathbf{U} = \mathbf{u_k}\)</span>.
+Wrapper around <code class="xref py py-func docutils literal notranslate"><span class="pre">quadrotor_experiment.get_E_k_x()</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covariance_steering.get_E_k_x">
+<span class="sig-prename descclassname"><span class="pre">covariance_steering.</span></span><span class="sig-name descname"><span class="pre">get_E_k_x</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance_steering.html#get_E_k_x"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#covariance_steering.get_E_k_x" title="Permalink to this definition"></a></dt>
+<dd><p>Get <span class="math notranslate nohighlight">\(E_k^x\)</span> such that <span class="math notranslate nohighlight">\(E_k^x \mathbf{X} = \mathbf{x_k}\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>k</strong> (<em>int</em>) – Timestep chosen so that <span class="math notranslate nohighlight">\(E_k^x \mathbf{X} = \mathbf{x_k}\)</span></p></li>
+<li><p><strong>n_states</strong> (<em>int</em>) – Number of states in <cite>mathbf{X}</cite></p></li>
+<li><p><strong>state_size</strong> (<em>int</em>) – Size of state vector</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>E_k</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="math notranslate nohighlight">\(E_k^x\)</span> such that <span class="math notranslate nohighlight">\(E_k^x \mathbf{X} = \mathbf{x_k}\)</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covariance_steering.get_lower_triangular_L">
+<span class="sig-prename descclassname"><span class="pre">covariance_steering.</span></span><span class="sig-name descname"><span class="pre">get_lower_triangular_L</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_controls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance_steering.html#get_lower_triangular_L"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#covariance_steering.get_lower_triangular_L" title="Permalink to this definition"></a></dt>
+<dd><p>Get lower triangular matrix of cvxpy variables, of size (<cite>n_controls * control_size</cite>) x (<cite>n_states * state_size</cite>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_states</strong> (<em>int</em>) – Number of states in trajectory</p></li>
+<li><p><strong>n_controls</strong> (<em>int</em>) – Number of control variables in trajectory. Should be
+equal to <cite>n_states</cite> - 1</p></li>
+<li><p><strong>state_size</strong> (<em>int</em>) – Size of state vector</p></li>
+<li><p><strong>control_size</strong> (<em>int</em>) – Size of control vector</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covariance_steering.mean_steering">
+<span class="sig-prename descclassname"><span class="pre">covariance_steering.</span></span><span class="sig-name descname"><span class="pre">mean_steering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance_steering.html#mean_steering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#covariance_steering.mean_steering" title="Permalink to this definition"></a></dt>
+<dd><p>Initialize a feasible mean state trajectory, subject
+to dynamics constraints but not to state or control
+chance constraints. Assumes disturbance is a linear
+function of the state. Minimizes control usage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with associated dynamics to compute
+mean trajectory for</p></li>
+<li><p><strong>x_0</strong> (<em>np.ndarray</em>) – Initial state</p></li>
+<li><p><strong>x_f</strong> (<em>np.ndarray</em>) – Final state</p></li>
+<li><p><strong>n_states</strong> (<em>int</em>) – Number of states in trajectory</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>success</strong> (<em>bool</em>) – True if SCS can find a valid trajectory, False otherwise</p></li>
+<li><p><strong>u_traj</strong> (<em>np.ndarray</em>) – Control trajectory used to steer from x_0 to x_f (None if not success)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covariance_steering.nominal_rollout">
+<span class="sig-prename descclassname"><span class="pre">covariance_steering.</span></span><span class="sig-name descname"><span class="pre">nominal_rollout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u_traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance_steering.html#nominal_rollout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#covariance_steering.nominal_rollout" title="Permalink to this definition"></a></dt>
+<dd><p>Roll out mean state trajectory of a system given an initial
+state and nominal control trajectory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with associated dynamics to roll out</p></li>
+<li><p><strong>x_0</strong> (<em>np.ndarray</em>) – Initial mean state</p></li>
+<li><p><strong>u_traj</strong> (<em>np.ndarray</em>) – Nominal control trajectory</p></li>
+<li><p><strong>n_states</strong> (<em>int</em>) – Number of states to roll out</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>x_traj</strong> – Mean state trajectory</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covariance_steering.robust_sigma_point_covariance_steering">
+<span class="sig-prename descclassname"><span class="pre">covariance_steering.</span></span><span class="sig-name descname"><span class="pre">robust_sigma_point_covariance_steering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_W</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_W</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">As</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Bs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Gs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_Ws</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_Ws</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_f</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance_steering.html#robust_sigma_point_covariance_steering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#covariance_steering.robust_sigma_point_covariance_steering" title="Permalink to this definition"></a></dt>
+<dd><p>Robust sigma point steering algorithm for steering in a Gaussian random
+field.</p>
+<p>This algorithm corresponds to Problem IV.1 in the paper. See section IV
+of the paper for additional details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with dynamics and constraints</p></li>
+<li><p><strong>A</strong> (<em>np.ndarray</em>) – State transition matrix, such that the open loop system dynamics
+in block-matrix notation are given by <span class="math notranslate nohighlight">\(\mathbf{X} = A\mathbf{x_0} + B\mathbf{U} + G\mathbf{W}\)</span></p></li>
+<li><p><strong>B</strong> (<em>np.ndarray</em>) – Control matrix in state-space dynamics, such that the open loop system dynamics in block-matrix notation are given by <span class="math notranslate nohighlight">\(\mathbf{X} = A\mathbf{x_0} + B\mathbf{U} + G\mathbf{W}\)</span></p></li>
+<li><p><strong>G</strong> (<em>np.ndarray</em>) – Disturbance matrix in state-space dynamics, such that the open loop system dynamics in block-matrix notation are given by <span class="math notranslate nohighlight">\(\mathbf{X} = A\mathbf{x_0} + B\mathbf{U} + G\mathbf{W}\)</span></p></li>
+<li><p><strong>mean_W</strong> (<em>np.ndarray</em>) – Mean of the Gaussian random field along a nominal trajectory</p></li>
+<li><p><strong>cov_W</strong> (<em>np.ndarray</em>) – Covariance of the Gaussian random field along a nominal trajectory</p></li>
+<li><p><strong>As</strong> (<em>list</em>) – List of state-transition (<span class="math notranslate nohighlight">\(A\)</span>) matrices for each sigma point</p></li>
+<li><p><strong>Bs</strong> (<em>list</em>) – List of control (<span class="math notranslate nohighlight">\(B\)</span>) matrices for each sigma point</p></li>
+<li><p><strong>Gs</strong> (<em>list</em>) – List of disturbance (<span class="math notranslate nohighlight">\(G\)</span>) matrices for each sigma point</p></li>
+<li><p><strong>mean_Ws</strong> (<em>list</em>) – List of mean disturbance trajectories starting at each sigma point,
+when initial guess control is applied</p></li>
+<li><p><strong>cov_Ws</strong> (<em>list</em>) – List of covariances of disturbance trajectories starting at each
+sigma point, when initial guess control is applied</p></li>
+<li><p><strong>sigma_points</strong> (<em>list</em>) – List of initial state for each sigma point</p></li>
+<li><p><strong>cov_0</strong> (<em>np.ndarray</em>) – Covariance of the initial state distribution</p></li>
+<li><p><strong>x_f</strong> (<em>np.ndarray</em>) – Desired mean of the final state distribution</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>success</strong> (<em>bool</em>) – True if MOSEK can solve the covariance steering problem, otherwise False</p></li>
+<li><p><strong>X_traj</strong> (<em>np.ndarray</em>) – State trajectory solution to covariance steering problem (or none if no solution)</p></li>
+<li><p><strong>U_traj</strong> (<em>np.ndarray</em>) – Nominal control trajectory solution to covariance steering problem (or None if no
+solution)</p></li>
+<li><p><strong>P_traj</strong> (<em>np.ndarray</em>) – State covariance trajectory solution to covariance steering problem (or None if no solution). Computed by approximating the mixture of Gaussians given by the mixture of sigma points as a Gaussian at each timestep.</p></li>
+<li><p><strong>K</strong> (<em>np.ndarray</em>) – Control feedback gain solution to covariance steering problem (or None if no
+solution)</p></li>
+<li><p><strong>cov_f</strong> (<em>np.ndarray</em>) – Final state covariance (or None if no solution to covariance steering problem). Computed as an over-approximation of the state covariance, equivalent
+to the worst-case contribution to the state covariance over all sigma points. See Section IV in the paper for further details.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covariance_steering.robust_sigma_point_edge_controller">
+<span class="sig-prename descclassname"><span class="pre">covariance_steering.</span></span><span class="sig-name descname"><span class="pre">robust_sigma_point_edge_controller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance_steering.html#robust_sigma_point_edge_controller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#covariance_steering.robust_sigma_point_edge_controller" title="Permalink to this definition"></a></dt>
+<dd><p>Get a belief roadmap edge from <span class="math notranslate nohighlight">\(\mathcal{N}(\mathbf{x_0}, P_0)\)</span>
+to a distribution with mean <span class="math notranslate nohighlight">\(\mathbf{x_f}\)</span>, if such an edge
+exists, using <a class="reference internal" href="#covariance_steering.robust_sigma_point_covariance_steering" title="covariance_steering.robust_sigma_point_covariance_steering"><code class="xref py py-func docutils literal notranslate"><span class="pre">robust_sigma_point_covariance_steering()</span></code></a> as
+the edge controller.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with associated dynamics and constraints</p></li>
+<li><p><strong>x_0</strong> (<em>np.ndarray</em>) – Initial state mean</p></li>
+<li><p><strong>P_0</strong> (<em>np.ndarray</em>) – Initial state covariance</p></li>
+<li><p><strong>x_f</strong> (<em>np.ndarray</em>) – Final state mean</p></li>
+<li><p><strong>n_states</strong> (<em>int</em>) – State trajectory length</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>success</strong> (<em>bool</em>) – True iff valid edge found</p></li>
+<li><p><strong>x_traj</strong> (<em>np.ndarray</em>) – Mean state trajectory along edge, or None if no edge found</p></li>
+<li><p><strong>u_traj</strong> (<em>np.ndarray</em>) – Nominal control trajectory along edge, or None if no edge found</p></li>
+<li><p><strong>cov_traj</strong> (<em>np.ndarray</em>) – State covariance trajectory along edge, or None if no edge found</p></li>
+<li><p><strong>K</strong> (<em>np.ndarray</em>) – State feedback gain along edge, or None if no edge found</p></li>
+<li><p><strong>cov_f</strong> (<em>np.ndarray</em>) – Final state covariance, or None if no edge found</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covariance_steering.select_sigma_points">
+<span class="sig-prename descclassname"><span class="pre">covariance_steering.</span></span><span class="sig-name descname"><span class="pre">select_sigma_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance_steering.html#select_sigma_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#covariance_steering.select_sigma_points" title="Permalink to this definition"></a></dt>
+<dd><p>Select 2 * <cite>state_size</cite> symmetrically distributed sigma points
+on the <span class="math notranslate nohighlight">\(\sqrt{state\_size}\)</span> th covariance contour of
+a Gaussian state distribution.</p>
+<p>See Julier &amp; Uhlmann 2004 for further details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x_0</strong> (<em>np.ndarray</em>) – State mean</p></li>
+<li><p><strong>P_0</strong> (<em>np.ndarray</em>) – State covariance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>sigma_points</strong> – List of sigma points</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covariance_steering.zero_control_rollout">
+<span class="sig-prename descclassname"><span class="pre">covariance_steering.</span></span><span class="sig-name descname"><span class="pre">zero_control_rollout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance_steering.html#zero_control_rollout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#covariance_steering.zero_control_rollout" title="Permalink to this definition"></a></dt>
+<dd><p>Roll out mean state trajectory assuming zero control.
+Wrapper around <code class="xref py py-func docutils literal notranslate"><span class="pre">quadrotor_experiment.nominal_rollout()</span></code></p>
+</dd></dl>
+
+</section>
+<section id="module-quadrotor_experiment">
+<span id="belief-roadmap-generation"></span><h2>Belief Roadmap Generation<a class="headerlink" href="#module-quadrotor_experiment" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="quadrotor_experiment.add_node_and_rewire_roadmap">
+<span class="sig-prename descclassname"><span class="pre">quadrotor_experiment.</span></span><span class="sig-name descname"><span class="pre">add_node_and_rewire_roadmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rewired_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_controller</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">near_cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_nearby</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_is_goal</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_experiment.html#add_node_and_rewire_roadmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_experiment.add_node_and_rewire_roadmap" title="Permalink to this definition"></a></dt>
+<dd><p>Add a new node to <cite>rewired_graph</cite> if a valid edge can be found from <cite>parent</cite>
+to <cite>node_mean</cite>, and rewire edges.</p>
+<p>Corresponds to lines 6-30 in Algorithm II in the paper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with associated dynamics and constraints</p></li>
+<li><p><strong>rewired_graph</strong> (<a class="reference internal" href="#graph.Graph" title="graph.Graph"><em>Graph</em></a>) – Belief roadmap to update</p></li>
+<li><p><strong>graph</strong> (<a class="reference internal" href="#graph.Graph" title="graph.Graph"><em>Graph</em></a>) – Belief roadmap with the same node means as <cite>rewired_graph</cite>,
+but with different node covariances, because <cite>graph</cite> is
+constructed without rewiring.</p></li>
+<li><p><strong>node_mean</strong> (<em>np.ndarray</em>) – Candidate node mean to add to the roadmap</p></li>
+<li><p><strong>parent</strong> (<a class="reference internal" href="#graph.Node" title="graph.Node"><em>Node</em></a>) – Existing node in the roadmap, candidate parent node</p></li>
+<li><p><strong>n_states</strong> (<em>int</em>) – Trajectory length for edge</p></li>
+<li><p><strong>edge_controller</strong> (<a class="reference internal" href="#covariance_steering.EdgeController" title="covariance_steering.EdgeController"><em>EdgeController</em></a>) – Edge controller to solve for edge</p></li>
+<li><p><strong>near_cutoff</strong> (<em>float</em>) – Cutoff for proximity for rewiring (only look to rewire with
+nodes which are closer than <cite>near_cutoff</cite>)</p></li>
+<li><p><strong>max_nearby</strong> (<em>int</em>) – Maximum number of nodes to consider for rewiring</p></li>
+<li><p><strong>node_is_goal</strong> (<em>bool</em>) – True if new node is added as a goal node</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>rewired_graph</strong> (<em>Graph</em>) – Updated version of rewired_graph</p></li>
+<li><p><strong>graph</strong> (<em>Graph</em>) – Updated version of graph</p></li>
+<li><p><strong>success</strong> (<em>bool</em>) – True if node was successfully added to <cite>rewired_graph</cite></p></li>
+<li><p><strong>new_node</strong> (<em>Node</em>) – New node which was added to <cite>rewired_graph</cite></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="quadrotor_experiment.add_node_to_roadmap">
+<span class="sig-prename descclassname"><span class="pre">quadrotor_experiment.</span></span><span class="sig-name descname"><span class="pre">add_node_to_roadmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_controller</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_is_goal</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_experiment.html#add_node_to_roadmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_experiment.add_node_to_roadmap" title="Permalink to this definition"></a></dt>
+<dd><p>Add a new node to a belief roadmap if a valid edge can be found from <cite>parent</cite> to <cite>node_mean</cite>.</p>
+<p>Corresponds to lines 5-9 in Algorithm I in the paper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with associated dynamics and constraints</p></li>
+<li><p><strong>graph</strong> (<a class="reference internal" href="#graph.Graph" title="graph.Graph"><em>Graph</em></a>) – Belief roadmap to update</p></li>
+<li><p><strong>node_mean</strong> (<em>np.ndarray</em>) – Candidate node mean to add to the roadmap</p></li>
+<li><p><strong>parent</strong> (<a class="reference internal" href="#graph.Node" title="graph.Node"><em>Node</em></a>) – Existing node in the roadmap, candidate parent node</p></li>
+<li><p><strong>n_states</strong> (<em>int</em>) – Trajectory length for edge</p></li>
+<li><p><strong>edge_controller</strong> (<a class="reference internal" href="#covariance_steering.EdgeController" title="covariance_steering.EdgeController"><em>EdgeController</em></a>) – Edge controller to solve for edge</p></li>
+<li><p><strong>node_is_goal</strong> (<em>bool</em>) – True if new node is added as a goal node</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>graph</strong> (<em>Graph</em>) – Belief roadmap, updated if edge was found</p></li>
+<li><p><strong>success</strong> (<em>bool</em>) – True if new node and edge added to roadmap</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="quadrotor_experiment.construct_belief_roadmaps_and_rewire">
+<span class="sig-prename descclassname"><span class="pre">quadrotor_experiment.</span></span><span class="sig-name descname"><span class="pre">construct_belief_roadmaps_and_rewire</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_controller</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">near_cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_nearby</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_experiment.html#construct_belief_roadmaps_and_rewire"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_experiment.construct_belief_roadmaps_and_rewire" title="Permalink to this definition"></a></dt>
+<dd><p>Given an initial state distribution, build out two belief roadmaps with
+n_nodes, one with edge rewiring and one without, using the non-rewired
+roadmap to sample nodes for expansion, then adding each new node to both
+roadmaps, and rewiring the rewired roadmap along the way. Both roadmaps
+will always contain the same node means.</p>
+<p>Equivalent to Algorithm II in the paper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>save_dir</strong> (<em>string</em>) – Valid folder for saving data</p></li>
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with associated dynamics, constraints, etc.</p></li>
+<li><p><strong>x_0</strong> (<em>np.ndarray</em>) – Initial state mean</p></li>
+<li><p><strong>P_0</strong> (<em>np.ndarray</em>) – Initial state covariance</p></li>
+<li><p><strong>graph_lims</strong> (<em>tuple</em>) – 2-tuple of numpy arrays specifying minimum and maximum bounds
+of state space</p></li>
+<li><p><strong>n_states</strong> (<em>int</em>) – Trajectory length for each edge in roadmap</p></li>
+<li><p><strong>n_nodes</strong> (<em>int</em>) – Desired number of nodes in roadmap</p></li>
+<li><p><strong>edge_controller</strong> (<a class="reference internal" href="#covariance_steering.EdgeController" title="covariance_steering.EdgeController"><em>EdgeController</em></a>) – Valid edge controller for constructing roadmap</p></li>
+<li><p><strong>near_cutoff</strong> (<em>float</em>) – Proximity cutoff for neighboring nodes for edge rewiring</p></li>
+<li><p><strong>max_nearby</strong> (<em>int</em>) – Maximum number of neighboring nodes to consider for rewiring</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>rewired_graph</strong> (<em>Graph</em>) – Belief roadmap constructed with edge rewiring</p></li>
+<li><p><strong>graph</strong> (<em>Graph</em>) – Belief roadmap constructed without edge rewiring, with the same
+set of node means as <cite>rewired_graph</cite></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="quadrotor_experiment.construct_belief_roadmaps_to_goal_and_rewire">
+<span class="sig-prename descclassname"><span class="pre">quadrotor_experiment.</span></span><span class="sig-name descname"><span class="pre">construct_belief_roadmaps_to_goal_and_rewire</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_controller</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">near_cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_nearby</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_experiment.html#construct_belief_roadmaps_to_goal_and_rewire"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_experiment.construct_belief_roadmaps_to_goal_and_rewire" title="Permalink to this definition"></a></dt>
+<dd><p>Given an initial state distribution and a final goal distribution,
+build out two belief roadmaps with n_nodes, one with edge rewiring
+and one without, using the non-rewired roadmap to sample nodes for
+expansion, then adding each new node to both roadmaps, and rewiring
+the rewired roadmap along the way. Both roadmaps will always contain
+the same node means. The path to the goal will be rewired to maintain
+minimum cost in the rewired roadmap, but the first feasible path to
+the goal will be kept in the non-rewired roadmap without updating or
+rewiring.</p>
+<p>Terminates when n_nodes have been added to both roadmaps, so goal
+may be reached by both roadmaps, or neither, or the rewired roadmap
+only.</p>
+<p>Equivalent to Algorithm II in the paper, modified for single-query
+planning.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>save_dir</strong> (<em>string</em>) – Valid folder for saving data</p></li>
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with associated dynamics, constraints, etc.</p></li>
+<li><p><strong>x_0</strong> (<em>np.ndarray</em>) – Initial state mean</p></li>
+<li><p><strong>P_0</strong> (<em>np.ndarray</em>) – Initial state covariance</p></li>
+<li><p><strong>x_f</strong> (<em>np.ndarray</em>) – Goal state mean</p></li>
+<li><p><strong>P_f</strong> (<em>np.ndarray</em>) – Goal state covariance</p></li>
+<li><p><strong>graph_lims</strong> (<em>tuple</em>) – 2-tuple of numpy arrays specifying minimum and maximum bounds
+of state space</p></li>
+<li><p><strong>n_states</strong> (<em>int</em>) – Trajectory length for each edge in roadmap</p></li>
+<li><p><strong>n_nodes</strong> (<em>int</em>) – Desired number of nodes in roadmap</p></li>
+<li><p><strong>edge_controller</strong> (<a class="reference internal" href="#covariance_steering.EdgeController" title="covariance_steering.EdgeController"><em>EdgeController</em></a>) – Valid edge controller for constructing roadmap</p></li>
+<li><p><strong>near_cutoff</strong> (<em>float</em>) – Proximity cutoff for neighboring nodes for edge rewiring</p></li>
+<li><p><strong>max_nearby</strong> (<em>int</em>) – Maximum number of neighboring nodes to consider for rewiring</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>rewired_graph</strong> (<em>Graph</em>) – Belief roadmap constructed with edge rewiring</p></li>
+<li><p><strong>graph</strong> (<em>Graph</em>) – Belief roadmap constructed without edge rewiring, with the same
+set of node means as <cite>rewired_graph</cite></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="quadrotor_experiment.get_nearest_nodes">
+<span class="sig-prename descclassname"><span class="pre">quadrotor_experiment.</span></span><span class="sig-name descname"><span class="pre">get_nearest_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">near_cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_nearby</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_experiment.html#get_nearest_nodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_experiment.get_nearest_nodes" title="Permalink to this definition"></a></dt>
+<dd><p>Get closest node (regardless of distance) and up to <cite>max_nearby</cite>
+closest nodes which are  all within <cite>near_cutoff</cite> of the sample.
+Uses weighted Euclidean distance to compute closeness.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with <cite>proximity_weights</cite> property for computing
+weighted Euclidean distance</p></li>
+<li><p><strong>sample</strong> (<em>np.ndarray</em>) – Random point in the state space</p></li>
+<li><p><strong>nodes</strong> (<em>set</em>) – Set of Node objects in belief roadmap</p></li>
+<li><p><strong>near_cutoff</strong> (<em>float</em>) – Cutoff for proximity for computing nearby nodes</p></li>
+<li><p><strong>max_nearby</strong> (<em>int</em>) – Maximum number of nearby nodes to return</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>nearest_neighbor</strong> (<em>Node</em>) – Node in <cite>nodes</cite> which is closest to <cite>sample</cite></p></li>
+<li><p><strong>nearby_nodes</strong> (<em>list</em>) – List of closest nodes in <cite>nodes</cite> to <cite>sample</cite>, subject
+to the constraint that distance to <cite>sample</cite> is less than
+<cite>near_cutoff</cite>. Contains 0 to <cite>max_nearby</cite> nodes.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="quadrotor_experiment.get_roadmap_edge">
+<span class="sig-prename descclassname"><span class="pre">quadrotor_experiment.</span></span><span class="sig-name descname"><span class="pre">get_roadmap_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_controller</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_experiment.html#get_roadmap_edge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_experiment.get_roadmap_edge" title="Permalink to this definition"></a></dt>
+<dd><p>Get a belief roadmap edge from <span class="math notranslate nohighlight">\(\mathcal{N}(\mathbf{x_0}, \lambda_{\max}(P_0)I)\)</span>
+to a distribution with mean <span class="math notranslate nohighlight">\(\mathbf{x_f}\)</span>, if such an edge
+exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with associated dynamics and constraints</p></li>
+<li><p><strong>x_0</strong> (<em>np.ndarray</em>) – Initial state mean</p></li>
+<li><p><strong>P_0</strong> (<em>np.ndarray</em>) – Initial state covariance. Note that this function does not
+steer from <span class="math notranslate nohighlight">\(\mathcal{N}(\mathbf{x_0}, P_0)\)</span>, but rather
+from <span class="math notranslate nohighlight">\(\mathcal{N}(\mathbf{x_0}, P_{0, \max})\)</span>, where
+<span class="math notranslate nohighlight">\(P_{0, \max} = \lambda_{\max}(P_0)I\)</span>.</p></li>
+<li><p><strong>x_f</strong> (<em>np.ndarray</em>) – Final state mean</p></li>
+<li><p><strong>n_states</strong> (<em>int</em>) – Trajectory length</p></li>
+<li><p><strong>edge_controller</strong> (<a class="reference internal" href="#covariance_steering.EdgeController" title="covariance_steering.EdgeController"><em>EdgeController</em></a>) – Type of edge controller to use</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>success</strong> (<em>bool</em>) – True iff valid edge found</p></li>
+<li><p><strong>x_traj</strong> (<em>np.ndarray</em>) – Mean state trajectory along edge, or None if no edge found</p></li>
+<li><p><strong>u_traj</strong> (<em>np.ndarray</em>) – Nominal control trajectory along edge, or None if no edge found</p></li>
+<li><p><strong>cov_traj</strong> (<em>np.ndarray</em>) – State covariance trajectory along edge, or None if no edge found</p></li>
+<li><p><strong>K</strong> (<em>np.ndarray</em>) – State feedback gain along edge, or None if no edge found</p></li>
+<li><p><strong>P_f</strong> (<em>np.ndarray</em>) – Final state covariance, or None if no edge found</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If <cite>edge_controller</cite> is not a valid edge controller type. Currently
+    supported edge controllers are EdgeController.BASELINE and
+    EdgeController.ROBUST_SIGMA_POINT.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="quadrotor_experiment.get_root_filenames">
+<span class="sig-prename descclassname"><span class="pre">quadrotor_experiment.</span></span><span class="sig-name descname"><span class="pre">get_root_filenames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_controller</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_experiment.html#get_root_filenames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_experiment.get_root_filenames" title="Permalink to this definition"></a></dt>
+<dd><p>Get root filenames for saving roadmap data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>edge_controller</strong> (<a class="reference internal" href="#covariance_steering.EdgeController" title="covariance_steering.EdgeController"><em>EdgeController</em></a>) – Valid edge controller for roadmap construction</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>rewired_fname_root</strong> (<em>string</em>) – Root filename for rewired roadmaps constructed with <cite>edge_controller</cite></p></li>
+<li><p><strong>no_rewire_fname_root</strong> (<em>string</em>) – Root filename for non-rewired roadmaps constructed with <cite>edge_controller</cite></p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If <cite>edge_controller</cite> isn’t a valid edge controller. Currently
+    supported edge controllers are EdgeController.BASELINE and
+    EdgeController.ROBUST_SIGMA_POINT.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="quadrotor_experiment.multi_query_experiment">
+<span class="sig-prename descclassname"><span class="pre">quadrotor_experiment.</span></span><span class="sig-name descname"><span class="pre">multi_query_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">near_cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_nearby</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_experiment.html#multi_query_experiment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_experiment.multi_query_experiment" title="Permalink to this definition"></a></dt>
+<dd><p>Run multiple trials for multi-query experiment in parallel, with baseline
+and robust sigma-point edge controllers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>save_dir</strong> (<em>string</em>) – Parent directory to save data to</p></li>
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with dynamics, constraints, and parameters</p></li>
+<li><p><strong>x_0</strong> (<em>np.ndarray</em>) – Initial state mean</p></li>
+<li><p><strong>P_0</strong> (<em>np.ndarray</em>) – Initial state covariance</p></li>
+<li><p><strong>graph_lims</strong> (<em>tuple</em>) – 2-tuple with minimum and maximum bounds of state space</p></li>
+<li><p><strong>n_states</strong> (<em>int</em>) – Trajectory length for edges in belief roadmap</p></li>
+<li><p><strong>n_nodes</strong> (<em>int</em>) – Number of nodes for belief roadmap</p></li>
+<li><p><strong>near_cutoff</strong> (<em>float</em>) – Proximity cutoff for neighboring nodes for edge rewiring</p></li>
+<li><p><strong>max_nearby</strong> (<em>int</em>) – Maximum number of nearby nodes to consider for rewiring</p></li>
+<li><p><strong>n_trials</strong> (<em>int</em>) – Number of experimental trials to run</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="quadrotor_experiment.multi_query_experimental_trial">
+<span class="sig-prename descclassname"><span class="pre">quadrotor_experiment.</span></span><span class="sig-name descname"><span class="pre">multi_query_experimental_trial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random_seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_controller</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">near_cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_nearby</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_experiment.html#multi_query_experimental_trial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_experiment.multi_query_experimental_trial" title="Permalink to this definition"></a></dt>
+<dd><p>Construct two belief roadmaps for a multi-query planning experiment, one
+with edge rewiring, and one without. Wrapper around <a class="reference internal" href="#quadrotor_experiment.construct_belief_roadmaps_and_rewire" title="quadrotor_experiment.construct_belief_roadmaps_and_rewire"><code class="xref py py-func docutils literal notranslate"><span class="pre">construct_belief_roadmaps_and_rewire()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="quadrotor_experiment.randomize_candidate_mean">
+<span class="sig-prename descclassname"><span class="pre">quadrotor_experiment.</span></span><span class="sig-name descname"><span class="pre">randomize_candidate_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_radius_lims</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_experiment.html#randomize_candidate_mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_experiment.randomize_candidate_mean" title="Permalink to this definition"></a></dt>
+<dd><p>Sample mean for a candidate node, biasing towards underexplored
+regions of the state space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with <cite>proximity_weights</cite> property, which
+specifies weights for computing Euclidean distance (e.g.
+weight position more than acceleration)</p></li>
+<li><p><strong>graph</strong> (<a class="reference internal" href="#graph.Graph" title="graph.Graph"><em>Graph</em></a>) – Belief roadmap</p></li>
+<li><p><strong>graph_lims</strong> (<em>tuple</em>) – 2-tuple of numpy arrays specifying minimum and maximum
+bounds of state space</p></li>
+<li><p><strong>sample_radius_lims</strong> (<em>tuple</em>) – 2-tuple of numpy arrays specifying minimum and maximum
+bounds for sampling around an existing node in the graph</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>candiate_mean</strong> (<em>np.ndarray</em>) – Random point in state space, falling within <cite>sample_radius_lims</cite>
+of <cite>expansion_node</cite></p></li>
+<li><p><strong>expansion_node</strong> (<em>Node</em>) – Node in the graph that is a candidate for expansion towards
+<cite>candidate_mean</cite></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="quadrotor_experiment.save_roadmap">
+<span class="sig-prename descclassname"><span class="pre">quadrotor_experiment.</span></span><span class="sig-name descname"><span class="pre">save_roadmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_experiment.html#save_roadmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_experiment.save_roadmap" title="Permalink to this definition"></a></dt>
+<dd><p>Save a roadmap to a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>save_dir</strong> (<em>string</em>) – Directory in which to save roadmap</p></li>
+<li><p><strong>root_filename</strong> (<em>string</em>) – Root filename for saving roadmap</p></li>
+<li><p><strong>graph</strong> (<a class="reference internal" href="#graph.Graph" title="graph.Graph"><em>Graph</em></a>) – Roadmap to save</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="quadrotor_experiment.single_query_experiment">
+<span class="sig-prename descclassname"><span class="pre">quadrotor_experiment.</span></span><span class="sig-name descname"><span class="pre">single_query_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">near_cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_nearby</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_experiment.html#single_query_experiment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_experiment.single_query_experiment" title="Permalink to this definition"></a></dt>
+<dd><p>Run multiple trials for single-query experiment in parallel, with baseline
+and robust sigma-point edge controllers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>save_dir</strong> (<em>string</em>) – Parent directory to save data to</p></li>
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with dynamics, constraints, and parameters</p></li>
+<li><p><strong>x_0</strong> (<em>np.ndarray</em>) – Initial state mean</p></li>
+<li><p><strong>P_0</strong> (<em>np.ndarray</em>) – Initial state covariance</p></li>
+<li><p><strong>x_f</strong> (<em>np.ndarray</em>) – Final state mean</p></li>
+<li><p><strong>P_f</strong> (<em>np.ndarray</em>) – Final state covariance</p></li>
+<li><p><strong>graph_lims</strong> (<em>tuple</em>) – 2-tuple with minimum and maximum bounds of state space</p></li>
+<li><p><strong>n_states</strong> (<em>int</em>) – Trajectory length for edges in belief roadmap</p></li>
+<li><p><strong>n_nodes</strong> (<em>int</em>) – Number of nodes for belief roadmap</p></li>
+<li><p><strong>near_cutoff</strong> (<em>float</em>) – Proximity cutoff for neighboring nodes for edge rewiring</p></li>
+<li><p><strong>max_nearby</strong> (<em>int</em>) – Maximum number of nearby nodes to consider for rewiring</p></li>
+<li><p><strong>n_trials</strong> (<em>int</em>) – Number of experimental trials to run</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="quadrotor_experiment.single_query_experimental_trial">
+<span class="sig-prename descclassname"><span class="pre">quadrotor_experiment.</span></span><span class="sig-name descname"><span class="pre">single_query_experimental_trial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random_seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_controller</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">near_cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_nearby</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_experiment.html#single_query_experimental_trial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_experiment.single_query_experimental_trial" title="Permalink to this definition"></a></dt>
+<dd><p>Construct two belief roadmaps for a single-query planning experiment, one
+with edge rewiring, and one without. Wrapper around <a class="reference internal" href="#quadrotor_experiment.construct_belief_roadmaps_to_goal_and_rewire" title="quadrotor_experiment.construct_belief_roadmaps_to_goal_and_rewire"><code class="xref py py-func docutils literal notranslate"><span class="pre">construct_belief_roadmaps_to_goal_and_rewire()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="quadrotor_experiment.update_node_and_descendants">
+<span class="sig-prename descclassname"><span class="pre">quadrotor_experiment.</span></span><span class="sig-name descname"><span class="pre">update_node_and_descendants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u_traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_controller</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quadrotor_experiment.html#update_node_and_descendants"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quadrotor_experiment.update_node_and_descendants" title="Permalink to this definition"></a></dt>
+<dd><p>Update <cite>node</cite> in a belief roadmap, such that its parent is now <cite>new_parent</cite>.
+Recursively update state covariance at <cite>node</cite> and all of its descendants
+by setting the state covariance at <cite>node</cite> to <cite>P_f</cite> and then recursively
+recomputing edges from <cite>node</cite> to its descendants.</p>
+<p>Rather than directly modifying <cite>graph</cite>, this function deepcopies <cite>graph</cite>,
+modifies the copy, and returns the modified copy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>problem</strong> (<a class="reference internal" href="#quadrotor_problem.Problem" title="quadrotor_problem.Problem"><em>Problem</em></a>) – Problem class with associated dynamics, constraints, and parameters</p></li>
+<li><p><strong>graph</strong> (<a class="reference internal" href="#graph.Graph" title="graph.Graph"><em>Graph</em></a>) – Belief roadmap to copy and update</p></li>
+<li><p><strong>new_parent</strong> (<a class="reference internal" href="#graph.Node" title="graph.Node"><em>Node</em></a>) – Node in <cite>graph</cite> which is now the parent of <cite>node</cite></p></li>
+<li><p><strong>node</strong> (<a class="reference internal" href="#graph.Node" title="graph.Node"><em>Node</em></a>) – Node in <cite>graph</cite> whose parent is now <cite>new_parent</cite></p></li>
+<li><p><strong>x_traj</strong> (<em>np.ndarray</em>) – Mean state trajectory for edge from <cite>new_parent</cite> to <cite>node</cite></p></li>
+<li><p><strong>u_traj</strong> (<em>np.ndarray</em>) – Nominal control for edge from <cite>new_parent</cite> to <cite>node</cite></p></li>
+<li><p><strong>cov_traj</strong> (<em>np.ndarray</em>) – State covariance trajectory for edge from <cite>new_parent</cite> to <cite>node</cite></p></li>
+<li><p><strong>K</strong> (<em>np.ndarray</em>) – Feedback gain for edge from <cite>new_parent</cite> to <cite>node</cite></p></li>
+<li><p><strong>P_f</strong> (<em>np.ndarray</em>) – Final state covariance for edge from <cite>new_parent</cite> to <cite>node</cite></p></li>
+<li><p><strong>n_states</strong> (<em>int</em>) – Trajectory length for each edge</p></li>
+<li><p><strong>edge_controller</strong> (<a class="reference internal" href="#covariance_steering.EdgeController" title="covariance_steering.EdgeController"><em>EdgeController</em></a>) – Edge controller to use for recomputing edges from <cite>node</cite> to
+its descendants</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>new_graph</strong> – Updated belief roadmap, where <cite>new_parent</cite> is now the parent of <cite>node</cite>, and where the updated covariance of <cite>node</cite> is propagated to its descendants</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#graph.Graph" title="graph.Graph">Graph</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Alex Rose.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

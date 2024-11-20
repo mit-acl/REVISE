@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>quadrotor_experiment &mdash; REVISE 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=f6245a2f"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            REVISE
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">REVISE</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">quadrotor_experiment</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for quadrotor_experiment</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Process</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">quadrotor_problem</span> <span class="kn">import</span> <span class="n">Quadrotor2DGRF</span>
+<span class="kn">from</span> <span class="nn">covariance_steering</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">graph</span> <span class="kn">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="randomize_candidate_mean"><a class="viewcode-back" href="../index.html#quadrotor_experiment.randomize_candidate_mean">[docs]</a><span class="k">def</span> <span class="nf">randomize_candidate_mean</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">graph_lims</span><span class="p">,</span> <span class="n">sample_radius_lims</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sample mean for a candidate node, biasing towards underexplored</span>
+<span class="sd">    regions of the state space.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">        problem: Problem</span>
+<span class="sd">            Problem class with `proximity_weights` property, which</span>
+<span class="sd">            specifies weights for computing Euclidean distance (e.g.</span>
+<span class="sd">            weight position more than acceleration)</span>
+<span class="sd">        graph: Graph</span>
+<span class="sd">            Belief roadmap</span>
+<span class="sd">        graph_lims: tuple</span>
+<span class="sd">            2-tuple of numpy arrays specifying minimum and maximum</span>
+<span class="sd">            bounds of state space </span>
+<span class="sd">        sample_radius_lims: tuple</span>
+<span class="sd">            2-tuple of numpy arrays specifying minimum and maximum</span>
+<span class="sd">            bounds for sampling around an existing node in the graph</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ---------</span>
+<span class="sd">        candiate_mean: np.ndarray</span>
+<span class="sd">            Random point in state space, falling within `sample_radius_lims`</span>
+<span class="sd">            of `expansion_node`</span>
+<span class="sd">        expansion_node: Node</span>
+<span class="sd">            Node in the graph that is a candidate for expansion towards</span>
+<span class="sd">            `candidate_mean`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Sample random point from state space</span>
+    <span class="n">rand_pt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">state_size</span><span class="p">)</span>
+    <span class="n">rand_pt</span> <span class="o">=</span> <span class="n">graph_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">graph_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">graph_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="n">rand_pt</span>
+
+    <span class="c1"># Find closest node to random point (this biases towards expanding</span>
+    <span class="c1"># node with largest Voronoi region)</span>
+    <span class="n">expansion_node</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_nearest_nodes</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">rand_pt</span><span class="p">,</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Sample in radius around the selected node</span>
+    <span class="n">candidate_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">state_size</span><span class="p">)</span>
+    <span class="n">candidate_mean</span> <span class="o">=</span> <span class="n">sample_radius_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">sample_radius_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">sample_radius_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="n">candidate_mean</span> <span class="o">+</span> <span class="n">expansion_node</span><span class="o">.</span><span class="n">mean</span>
+
+    <span class="k">return</span> <span class="n">candidate_mean</span><span class="p">,</span> <span class="n">expansion_node</span> </div>
+
+<div class="viewcode-block" id="get_nearest_nodes"><a class="viewcode-back" href="../index.html#quadrotor_experiment.get_nearest_nodes">[docs]</a><span class="k">def</span> <span class="nf">get_nearest_nodes</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get closest node (regardless of distance) and up to `max_nearby` </span>
+<span class="sd">    closest nodes which are  all within `near_cutoff` of the sample. </span>
+<span class="sd">    Uses weighted Euclidean distance to compute closeness.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">        problem: Problem</span>
+<span class="sd">            Problem class with `proximity_weights` property for computing</span>
+<span class="sd">            weighted Euclidean distance</span>
+<span class="sd">        sample: np.ndarray</span>
+<span class="sd">            Random point in the state space</span>
+<span class="sd">        nodes: set</span>
+<span class="sd">            Set of Node objects in belief roadmap</span>
+<span class="sd">        near_cutoff: float</span>
+<span class="sd">            Cutoff for proximity for computing nearby nodes</span>
+<span class="sd">        max_nearby: int</span>
+<span class="sd">            Maximum number of nearby nodes to return</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">        nearest_neighbor: Node</span>
+<span class="sd">            Node in `nodes` which is closest to `sample`</span>
+<span class="sd">        nearby_nodes: list</span>
+<span class="sd">            List of closest nodes in `nodes` to `sample`, subject</span>
+<span class="sd">            to the constraint that distance to `sample` is less than</span>
+<span class="sd">            `near_cutoff`. Contains 0 to `max_nearby` nodes.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">closest_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="n">nearest_neighbor</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">near_nodes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">is_goal</span><span class="p">:</span> <span class="c1">#OK to sample near goal</span>
+            <span class="n">wt</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">proximity_weights</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">wt</span><span class="o">*</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">mean</span><span class="o">-</span><span class="n">sample</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span>
+            <span class="k">if</span> <span class="n">dist</span> <span class="o">&lt;</span> <span class="n">closest_distance</span><span class="p">:</span>
+                <span class="n">closest_distance</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">closest_distance</span><span class="p">,</span> <span class="n">dist</span><span class="p">)</span>
+                <span class="n">nearest_neighbor</span> <span class="o">=</span> <span class="n">node</span>
+            <span class="k">if</span> <span class="n">dist</span> <span class="o">&lt;</span> <span class="n">near_cutoff</span><span class="p">:</span>
+                <span class="n">near_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dist</span><span class="p">,</span> <span class="n">node</span><span class="p">))</span>
+    <span class="n">nearest_nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">node_mean</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">node_mean</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">near_nodes</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+    <span class="n">nearby_nodes</span> <span class="o">=</span> <span class="n">nearest_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">max_nearby</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">nearest_neighbor</span><span class="p">,</span> <span class="n">nearby_nodes</span> </div>
+
+<div class="viewcode-block" id="get_roadmap_edge"><a class="viewcode-back" href="../index.html#quadrotor_experiment.get_roadmap_edge">[docs]</a><span class="k">def</span> <span class="nf">get_roadmap_edge</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">x_0</span><span class="p">,</span> <span class="n">P_0</span><span class="p">,</span> <span class="n">x_f</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a belief roadmap edge from :math:`\mathcal{N}(\mathbf{x_0}, \lambda_{\max}(P_0)I)`</span>
+<span class="sd">    to a distribution with mean :math:`\mathbf{x_f}`, if such an edge</span>
+<span class="sd">    exists.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">        problem: Problem</span>
+<span class="sd">            Problem class with associated dynamics and constraints</span>
+<span class="sd">        x_0: np.ndarray</span>
+<span class="sd">            Initial state mean</span>
+<span class="sd">        P_0: np.ndarray</span>
+<span class="sd">            Initial state covariance. Note that this function does not</span>
+<span class="sd">            steer from :math:`\mathcal{N}(\mathbf{x_0}, P_0)`, but rather</span>
+<span class="sd">            from :math:`\mathcal{N}(\mathbf{x_0}, P_{0, \max})`, where</span>
+<span class="sd">            :math:`P_{0, \max} = \lambda_{\max}(P_0)I`.</span>
+<span class="sd">        x_f: np.ndarray</span>
+<span class="sd">            Final state mean</span>
+<span class="sd">        n_states: int</span>
+<span class="sd">            Trajectory length</span>
+<span class="sd">        edge_controller: EdgeController</span>
+<span class="sd">            Type of edge controller to use</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ---------</span>
+<span class="sd">        success: bool</span>
+<span class="sd">            True iff valid edge found</span>
+<span class="sd">        x_traj: np.ndarray</span>
+<span class="sd">            Mean state trajectory along edge, or None if no edge found</span>
+<span class="sd">        u_traj: np.ndarray</span>
+<span class="sd">            Nominal control trajectory along edge, or None if no edge found</span>
+<span class="sd">        cov_traj: np.ndarray</span>
+<span class="sd">            State covariance trajectory along edge, or None if no edge found</span>
+<span class="sd">        K: np.ndarray</span>
+<span class="sd">            State feedback gain along edge, or None if no edge found</span>
+<span class="sd">        P_f: np.ndarray</span>
+<span class="sd">            Final state covariance, or None if no edge found</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    --------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `edge_controller` is not a valid edge controller type. Currently</span>
+<span class="sd">            supported edge controllers are EdgeController.BASELINE and</span>
+<span class="sd">            EdgeController.ROBUST_SIGMA_POINT.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get mouth of funnel</span>
+    <span class="n">max_eig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">P_0</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">P_0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="n">max_eig</span>
+
+    <span class="c1"># Attempt steering</span>
+    <span class="k">if</span> <span class="n">edge_controller</span> <span class="o">==</span> <span class="n">EdgeController</span><span class="o">.</span><span class="n">ROBUST_SIGMA_POINT</span><span class="p">:</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">u_traj</span><span class="p">,</span> <span class="n">cov_traj</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">P_f</span> <span class="o">=</span> <span class="n">robust_sigma_point_edge_controller</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">x_0</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">x_f</span><span class="p">,</span> <span class="n">n_states</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">edge_controller</span> <span class="o">==</span> <span class="n">EdgeController</span><span class="o">.</span><span class="n">BASELINE</span><span class="p">:</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">u_traj</span><span class="p">,</span> <span class="n">cov_traj</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">P_f</span> <span class="o">=</span> <span class="n">baseline_edge_controller</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">x_0</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">x_f</span><span class="p">,</span> <span class="n">n_states</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Edge controller is of unknown type.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">success</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">u_traj</span><span class="p">,</span> <span class="n">cov_traj</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">P_f</span></div>
+
+<div class="viewcode-block" id="update_node_and_descendants"><a class="viewcode-back" href="../index.html#quadrotor_experiment.update_node_and_descendants">[docs]</a><span class="k">def</span> <span class="nf">update_node_and_descendants</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">new_parent</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">u_traj</span><span class="p">,</span> <span class="n">cov_traj</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">P_f</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Update `node` in a belief roadmap, such that its parent is now `new_parent`.</span>
+<span class="sd">    Recursively update state covariance at `node` and all of its descendants</span>
+<span class="sd">    by setting the state covariance at `node` to `P_f` and then recursively </span>
+<span class="sd">    recomputing edges from `node` to its descendants.</span>
+
+<span class="sd">    Rather than directly modifying `graph`, this function deepcopies `graph`,</span>
+<span class="sd">    modifies the copy, and returns the modified copy.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">        problem: Problem</span>
+<span class="sd">            Problem class with associated dynamics, constraints, and parameters</span>
+<span class="sd">        graph: Graph</span>
+<span class="sd">            Belief roadmap to copy and update</span>
+<span class="sd">        new_parent: Node</span>
+<span class="sd">            Node in `graph` which is now the parent of `node`</span>
+<span class="sd">        node: Node</span>
+<span class="sd">            Node in `graph` whose parent is now `new_parent`</span>
+<span class="sd">        x_traj: np.ndarray</span>
+<span class="sd">            Mean state trajectory for edge from `new_parent` to `node`</span>
+<span class="sd">        u_traj: np.ndarray</span>
+<span class="sd">            Nominal control for edge from `new_parent` to `node`</span>
+<span class="sd">        cov_traj: np.ndarray</span>
+<span class="sd">            State covariance trajectory for edge from `new_parent` to `node`</span>
+<span class="sd">        K: np.ndarray</span>
+<span class="sd">            Feedback gain for edge from `new_parent` to `node`</span>
+<span class="sd">        P_f: np.ndarray</span>
+<span class="sd">            Final state covariance for edge from `new_parent` to `node`</span>
+<span class="sd">        n_states: int</span>
+<span class="sd">            Trajectory length for each edge</span>
+<span class="sd">        edge_controller: EdgeController</span>
+<span class="sd">            Edge controller to use for recomputing edges from `node` to</span>
+<span class="sd">            its descendants</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">        new_graph: Graph</span>
+<span class="sd">            Updated belief roadmap, where `new_parent` is now the parent of `node`, and where the updated covariance of `node` is propagated to its descendants</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;In update...&quot;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Updating a node with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">get_descendants</span><span class="p">(</span><span class="n">node</span><span class="p">))</span><span class="si">}</span><span class="s2"> descendants&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Update node and get its children (if it has any)</span>
+    <span class="n">children</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">get_children</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+    <span class="n">edges</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">)</span>
+    <span class="n">old_parent_edge</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">edge</span><span class="o">.</span><span class="n">end_node</span> <span class="o">==</span> <span class="n">node</span><span class="p">:</span>
+            <span class="n">old_parent_edge</span> <span class="o">=</span> <span class="n">edge</span>
+    <span class="n">edges</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">old_parent_edge</span><span class="p">)</span>
+    <span class="n">nodes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_goal</span><span class="p">:</span>
+        <span class="n">new_node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">covariance</span><span class="o">=</span><span class="n">P_f</span><span class="p">,</span> <span class="n">is_goal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">covariance</span><span class="o">=</span><span class="n">P_f</span><span class="p">)</span>
+    <span class="n">nodes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_node</span><span class="p">)</span>
+    <span class="n">new_edge</span> <span class="o">=</span> <span class="n">Edge</span><span class="p">(</span><span class="n">new_parent</span><span class="p">,</span> <span class="n">new_node</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">covariance</span><span class="o">=</span><span class="n">cov_traj</span><span class="p">,</span> <span class="n">ff_ctrl</span><span class="o">=</span><span class="n">u_traj</span><span class="p">,</span> <span class="n">fb_ctrl</span><span class="o">=</span><span class="n">K</span><span class="p">)</span>
+    <span class="n">edges</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_edge</span><span class="p">)</span>
+
+    <span class="c1"># Recursively update all descendants of node by recomputing edges</span>
+    <span class="n">new_graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">u_traj</span><span class="p">,</span> <span class="n">cov_traj</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">P_f</span> <span class="o">=</span> <span class="n">get_roadmap_edge</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">new_node</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">new_node</span><span class="o">.</span><span class="n">covariance</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">)</span>
+        <span class="c1"># May fail rarely due to too many iterations required to converge,</span>
+        <span class="c1"># or may fail if robust sigma point edge control is used and </span>
+        <span class="c1"># condition (1) or (2) from Theorem V.1 is violated.</span>
+        <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+            <span class="c1"># Recursively update descendants of child</span>
+            <span class="n">new_graph</span> <span class="o">=</span> <span class="n">update_node_and_descendants</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">new_graph</span><span class="p">,</span> <span class="n">new_node</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">u_traj</span><span class="p">,</span> <span class="n">cov_traj</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">P_f</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="c1"># Just update edge to use new parent node, but keep</span>
+            <span class="c1"># same plan to get to child and to all of its descendants.</span>
+            <span class="c1"># This works because at least one ancestor of child has</span>
+            <span class="c1"># smaller state covariance than in the old plan. So the</span>
+            <span class="c1"># old plan should still hold under mild assumptions.</span>
+            <span class="n">nodes</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">new_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+            <span class="n">edges</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">new_graph</span><span class="o">.</span><span class="n">edges</span><span class="p">)</span>
+            <span class="n">old_parent_edge</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">edge</span><span class="o">.</span><span class="n">end_node</span> <span class="o">==</span> <span class="n">child</span><span class="p">:</span>
+                    <span class="n">old_parent_edge</span> <span class="o">=</span> <span class="n">edge</span>
+
+            <span class="n">new_edge</span> <span class="o">=</span> <span class="n">Edge</span><span class="p">(</span><span class="n">new_node</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">old_parent_edge</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">covariance</span><span class="o">=</span><span class="n">old_parent_edge</span><span class="o">.</span><span class="n">covariance</span><span class="p">,</span> <span class="n">ff_ctrl</span><span class="o">=</span><span class="n">old_parent_edge</span><span class="o">.</span><span class="n">ff_ctrl</span><span class="p">,</span> <span class="n">fb_ctrl</span><span class="o">=</span><span class="n">old_parent_edge</span><span class="o">.</span><span class="n">fb_ctrl</span><span class="p">)</span>
+            <span class="n">edges</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">old_parent_edge</span><span class="p">)</span>
+            <span class="n">edges</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_edge</span><span class="p">)</span>
+            <span class="n">new_graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">new_graph</span></div>
+
+<div class="viewcode-block" id="add_node_to_roadmap"><a class="viewcode-back" href="../index.html#quadrotor_experiment.add_node_to_roadmap">[docs]</a><span class="k">def</span> <span class="nf">add_node_to_roadmap</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">node_mean</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">,</span> <span class="n">node_is_goal</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add a new node to a belief roadmap if a valid edge can be found from `parent` to `node_mean`.</span>
+<span class="sd">    </span>
+<span class="sd">    Corresponds to lines 5-9 in Algorithm I in the paper.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">        problem: Problem</span>
+<span class="sd">            Problem class with associated dynamics and constraints</span>
+<span class="sd">        graph: Graph</span>
+<span class="sd">            Belief roadmap to update</span>
+<span class="sd">        node_mean: np.ndarray</span>
+<span class="sd">            Candidate node mean to add to the roadmap</span>
+<span class="sd">        parent: Node</span>
+<span class="sd">            Existing node in the roadmap, candidate parent node</span>
+<span class="sd">        n_states: int</span>
+<span class="sd">            Trajectory length for edge</span>
+<span class="sd">        edge_controller: EdgeController</span>
+<span class="sd">            Edge controller to solve for edge</span>
+<span class="sd">        node_is_goal: bool</span>
+<span class="sd">            True if new node is added as a goal node</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ---------</span>
+<span class="sd">        graph: Graph</span>
+<span class="sd">            Belief roadmap, updated if edge was found</span>
+<span class="sd">        success: bool</span>
+<span class="sd">            True if new node and edge added to roadmap</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node mean: </span><span class="si">{</span><span class="n">node_mean</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Closest node mean: </span><span class="si">{</span><span class="n">parent</span><span class="o">.</span><span class="n">mean</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">success</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">u_traj</span><span class="p">,</span> <span class="n">cov_traj</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">P_f</span> <span class="o">=</span> <span class="n">get_roadmap_edge</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">parent</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">parent</span><span class="o">.</span><span class="n">covariance</span><span class="p">,</span> <span class="n">node_mean</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+        <span class="c1"># Add node and edge to graph</span>
+        <span class="k">if</span> <span class="n">node_is_goal</span><span class="p">:</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">get_goal_node</span><span class="p">())</span>
+        <span class="n">new_node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">node_mean</span><span class="p">,</span> <span class="n">P_f</span><span class="p">,</span> <span class="n">is_goal</span><span class="o">=</span><span class="n">node_is_goal</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added node with mean </span><span class="si">{</span><span class="n">node_mean</span><span class="si">}</span><span class="s2"> and cov </span><span class="si">{</span><span class="n">P_f</span><span class="si">}</span><span class="s2">, graph now has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span><span class="si">}</span><span class="s2"> nodes&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Max cov eigval = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">P_f</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">new_edge</span> <span class="o">=</span> <span class="n">Edge</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">new_node</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">cov_traj</span><span class="p">,</span> <span class="n">u_traj</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">new_node</span><span class="p">)</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">new_edge</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">graph</span><span class="p">,</span> <span class="n">success</span></div>
+
+<div class="viewcode-block" id="add_node_and_rewire_roadmap"><a class="viewcode-back" href="../index.html#quadrotor_experiment.add_node_and_rewire_roadmap">[docs]</a><span class="k">def</span> <span class="nf">add_node_and_rewire_roadmap</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">rewired_graph</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">node_mean</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">,</span> <span class="n">node_is_goal</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add a new node to `rewired_graph` if a valid edge can be found from `parent`</span>
+<span class="sd">    to `node_mean`, and rewire edges.</span>
+
+<span class="sd">    Corresponds to lines 6-30 in Algorithm II in the paper.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">        problem: Problem</span>
+<span class="sd">            Problem class with associated dynamics and constraints</span>
+<span class="sd">        rewired_graph: Graph</span>
+<span class="sd">            Belief roadmap to update</span>
+<span class="sd">        graph: Graph</span>
+<span class="sd">            Belief roadmap with the same node means as `rewired_graph`,</span>
+<span class="sd">            but with different node covariances, because `graph` is</span>
+<span class="sd">            constructed without rewiring.</span>
+<span class="sd">        node_mean: np.ndarray</span>
+<span class="sd">            Candidate node mean to add to the roadmap</span>
+<span class="sd">        parent: Node</span>
+<span class="sd">            Existing node in the roadmap, candidate parent node</span>
+<span class="sd">        n_states: int</span>
+<span class="sd">            Trajectory length for edge</span>
+<span class="sd">        edge_controller: EdgeController</span>
+<span class="sd">            Edge controller to solve for edge</span>
+<span class="sd">        near_cutoff: float</span>
+<span class="sd">            Cutoff for proximity for rewiring (only look to rewire with </span>
+<span class="sd">            nodes which are closer than `near_cutoff`)</span>
+<span class="sd">        max_nearby: int</span>
+<span class="sd">            Maximum number of nodes to consider for rewiring</span>
+<span class="sd">        node_is_goal: bool</span>
+<span class="sd">            True if new node is added as a goal node</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ---------</span>
+<span class="sd">        rewired_graph: Graph</span>
+<span class="sd">            Updated version of rewired_graph </span>
+<span class="sd">        graph: Graph</span>
+<span class="sd">            Updated version of graph</span>
+<span class="sd">        success: bool</span>
+<span class="sd">            True if node was successfully added to `rewired_graph`</span>
+<span class="sd">        new_node: Node</span>
+<span class="sd">            New node which was added to `rewired_graph`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node mean: </span><span class="si">{</span><span class="n">node_mean</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Closest node mean: </span><span class="si">{</span><span class="n">parent</span><span class="o">.</span><span class="n">mean</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Get nodes neighboring the candidate node mean </span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">neighboring_nodes</span> <span class="o">=</span> <span class="n">get_nearest_nodes</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">node_mean</span><span class="p">,</span> <span class="n">rewired_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">)</span>
+
+    <span class="c1"># Continue only if new node is a goal node, or if new node can</span>
+    <span class="c1"># be added to graph</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">node_is_goal</span><span class="p">:</span>
+        <span class="n">new_graph</span><span class="p">,</span> <span class="n">success</span> <span class="o">=</span> <span class="n">add_node_to_roadmap</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">Graph</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">),</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">)),</span> <span class="n">node_mean</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="c1"># Continue only if new node can be added to rewired_graph</span>
+    <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">rewired_graph</span><span class="o">.</span><span class="n">look_up_by_mean</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">u_traj</span><span class="p">,</span> <span class="n">cov_traj</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">P_f</span> <span class="o">=</span> <span class="n">get_roadmap_edge</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">parent</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">parent</span><span class="o">.</span><span class="n">covariance</span><span class="p">,</span> <span class="n">node_mean</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">)</span>
+
+    <span class="c1"># Add node to rewired_graph, and rewire rewired_graph accordingly</span>
+    <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+        <span class="c1"># Update graph to accept new edge</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">node_is_goal</span><span class="p">:</span>
+            <span class="n">graph</span> <span class="o">=</span> <span class="n">new_graph</span>
+
+        <span class="c1"># Current best parent is parent </span>
+        <span class="n">src_best</span> <span class="o">=</span> <span class="n">parent</span> 
+        <span class="n">x_traj_best</span><span class="p">,</span> <span class="n">u_traj_best</span><span class="p">,</span> <span class="n">cov_traj_best</span><span class="p">,</span> <span class="n">K_best</span><span class="p">,</span> <span class="n">P_f_best</span> <span class="o">=</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">u_traj</span><span class="p">,</span> <span class="n">cov_traj</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">P_f</span>
+
+        <span class="c1"># Try steering from all nodes in neighboring_node and get </span>
+        <span class="c1"># best edge to add to rewired_graph</span>
+        <span class="k">for</span> <span class="n">nearby_neighbor</span> <span class="ow">in</span> <span class="n">neighboring_nodes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">nearby_neighbor</span> <span class="o">!=</span> <span class="n">parent</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">nearby_neighbor</span><span class="o">.</span><span class="n">is_goal</span><span class="p">:</span>
+                <span class="n">success</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">u_traj</span><span class="p">,</span> <span class="n">cov_traj</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">P_f</span> <span class="o">=</span> <span class="n">get_roadmap_edge</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">nearby_neighbor</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">nearby_neighbor</span><span class="o">.</span><span class="n">covariance</span><span class="p">,</span> <span class="n">node_mean</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">)</span>
+                <span class="c1"># Check if covariance is smaller than previous best</span>
+                <span class="k">if</span> <span class="n">success</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">P_f</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">P_f_best</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">():</span>
+                    <span class="n">x_traj_best</span><span class="p">,</span> <span class="n">u_traj_best</span><span class="p">,</span> <span class="n">cov_traj_best</span><span class="p">,</span> <span class="n">K_best</span><span class="p">,</span> <span class="n">P_f_best</span> <span class="o">=</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">u_traj</span><span class="p">,</span> <span class="n">cov_traj</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">P_f</span>
+                    <span class="n">src_best</span> <span class="o">=</span> <span class="n">nearby_neighbor</span>
+
+        <span class="k">if</span> <span class="n">node_is_goal</span><span class="p">:</span>
+            <span class="c1"># Remove prior goal node and edges to prior</span>
+            <span class="c1"># goal node</span>
+            <span class="n">old_goal_node</span> <span class="o">=</span> <span class="n">rewired_graph</span><span class="o">.</span><span class="n">get_goal_node</span><span class="p">()</span>
+            <span class="n">old_edges</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">rewired_graph</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">edge</span><span class="o">.</span><span class="n">end_node</span> <span class="o">==</span> <span class="n">old_goal_node</span><span class="p">:</span>
+                    <span class="n">old_edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">old_edges</span><span class="p">:</span>
+                <span class="n">rewired_graph</span><span class="o">.</span><span class="n">edges</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span>
+            <span class="n">rewired_graph</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">old_goal_node</span><span class="p">)</span>
+
+        <span class="c1"># Add best edge to node to rewired_graph</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added node with mean </span><span class="si">{</span><span class="n">node_mean</span><span class="si">}</span><span class="s2"> and cov </span><span class="si">{</span><span class="n">P_f_best</span><span class="si">}</span><span class="s2">, graph now has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">rewired_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span><span class="si">}</span><span class="s2"> nodes&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Max cov eigval = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">P_f_best</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">new_node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">node_mean</span><span class="p">,</span> <span class="n">P_f_best</span><span class="p">,</span> <span class="n">is_goal</span><span class="o">=</span><span class="n">node_is_goal</span><span class="p">)</span>
+        <span class="n">new_edge</span> <span class="o">=</span> <span class="n">Edge</span><span class="p">(</span><span class="n">src_best</span><span class="p">,</span> <span class="n">new_node</span><span class="p">,</span> <span class="n">x_traj_best</span><span class="p">,</span> <span class="n">covariance</span><span class="o">=</span><span class="n">cov_traj_best</span><span class="p">,</span> <span class="n">ff_ctrl</span><span class="o">=</span><span class="n">u_traj_best</span><span class="p">,</span> <span class="n">fb_ctrl</span><span class="o">=</span><span class="n">K_best</span><span class="p">)</span>
+        <span class="n">rewired_graph</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">new_node</span><span class="p">)</span>
+        <span class="n">rewired_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">new_edge</span><span class="p">)</span>
+
+        <span class="c1"># Try steering from the new node to neighboring nodes, and rewire</span>
+        <span class="c1"># if new edge is found to a neighboring node which reduces state</span>
+        <span class="c1"># covariance at that node</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">node_is_goal</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">nearby_neighbor</span> <span class="ow">in</span> <span class="n">neighboring_nodes</span><span class="p">:</span>
+                <span class="c1"># Ensure neighbor is in graph (it may have been updated</span>
+                <span class="c1">#based on an update to one of its ancestors)</span>
+                <span class="k">if</span> <span class="n">nearby_neighbor</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rewired_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+                    <span class="n">nearby_neighbor</span> <span class="o">=</span> <span class="n">rewired_graph</span><span class="o">.</span><span class="n">look_up_by_mean</span><span class="p">(</span><span class="n">nearby_neighbor</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+                <span class="c1"># Ensure we are not steering to an ancestor or self steering</span>
+                <span class="k">if</span> <span class="n">nearby_neighbor</span> <span class="o">!=</span> <span class="n">new_node</span> <span class="ow">and</span> <span class="n">nearby_neighbor</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rewired_graph</span><span class="o">.</span><span class="n">get_ancestors</span><span class="p">(</span><span class="n">new_node</span><span class="p">):</span>
+                    <span class="c1"># Steer from new_node to nearby_neighbor </span>
+                    <span class="n">success</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">u_traj</span><span class="p">,</span> <span class="n">cov_traj</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">P_f</span> <span class="o">=</span> <span class="n">get_roadmap_edge</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">new_node</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">new_node</span><span class="o">.</span><span class="n">covariance</span><span class="p">,</span> <span class="n">nearby_neighbor</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">)</span>
+                    <span class="c1"># If this edge lowers the state covariance at</span>
+                    <span class="c1"># nearby_neighbor, update nearby_neighbor and its</span>
+                    <span class="c1"># descendants</span>
+                    <span class="k">if</span> <span class="n">success</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">P_f</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">nearby_neighbor</span><span class="o">.</span><span class="n">covariance</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">():</span>
+                        <span class="n">rewired_graph</span> <span class="o">=</span> <span class="n">update_node_and_descendants</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">rewired_graph</span><span class="p">,</span> <span class="n">new_node</span><span class="p">,</span> <span class="n">nearby_neighbor</span><span class="p">,</span> <span class="n">x_traj</span><span class="p">,</span> <span class="n">u_traj</span><span class="p">,</span> <span class="n">cov_traj</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">P_f</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">)</span>
+
+        <span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_node</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Edge was not successful&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rewired_graph</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">success</span><span class="p">,</span> <span class="n">new_node</span></div>
+
+<div class="viewcode-block" id="get_root_filenames"><a class="viewcode-back" href="../index.html#quadrotor_experiment.get_root_filenames">[docs]</a><span class="k">def</span> <span class="nf">get_root_filenames</span><span class="p">(</span><span class="n">edge_controller</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get root filenames for saving roadmap data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">        edge_controller: EdgeController</span>
+<span class="sd">            Valid edge controller for roadmap construction</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">        rewired_fname_root: string</span>
+<span class="sd">            Root filename for rewired roadmaps constructed with `edge_controller`</span>
+<span class="sd">        no_rewire_fname_root: string</span>
+<span class="sd">            Root filename for non-rewired roadmaps constructed with `edge_controller`</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    --------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `edge_controller` isn&#39;t a valid edge controller. Currently</span>
+<span class="sd">            supported edge controllers are EdgeController.BASELINE and</span>
+<span class="sd">            EdgeController.ROBUST_SIGMA_POINT.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">edge_controller</span> <span class="o">==</span> <span class="n">EdgeController</span><span class="o">.</span><span class="n">BASELINE</span><span class="p">:</span>
+        <span class="n">rewired_fname_root</span> <span class="o">=</span> <span class="s2">&quot;rewired_ablation&quot;</span>
+        <span class="n">no_rewire_fname_root</span> <span class="o">=</span> <span class="s2">&quot;baseline&quot;</span>
+    <span class="k">elif</span> <span class="n">edge_controller</span> <span class="o">==</span> <span class="n">EdgeController</span><span class="o">.</span><span class="n">ROBUST_SIGMA_POINT</span><span class="p">:</span>
+        <span class="n">rewired_fname_root</span> <span class="o">=</span> <span class="s2">&quot;revise&quot;</span>
+        <span class="n">no_rewire_fname_root</span> <span class="o">=</span> <span class="s2">&quot;robust_ablation&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Edge controller is of unknown type.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rewired_fname_root</span><span class="p">,</span> <span class="n">no_rewire_fname_root</span></div>
+
+<div class="viewcode-block" id="save_roadmap"><a class="viewcode-back" href="../index.html#quadrotor_experiment.save_roadmap">[docs]</a><span class="k">def</span> <span class="nf">save_roadmap</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">root_filename</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save a roadmap to a file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">        save_dir: string</span>
+<span class="sd">            Directory in which to save roadmap</span>
+<span class="sd">        root_filename: string</span>
+<span class="sd">            Root filename for saving roadmap</span>
+<span class="sd">        graph: Graph</span>
+<span class="sd">            Roadmap to save</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">save_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_filename</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">)</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_filename</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="construct_belief_roadmaps_and_rewire"><a class="viewcode-back" href="../index.html#quadrotor_experiment.construct_belief_roadmaps_and_rewire">[docs]</a><span class="k">def</span> <span class="nf">construct_belief_roadmaps_and_rewire</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">x_0</span><span class="p">,</span> <span class="n">P_0</span><span class="p">,</span> <span class="n">graph_lims</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">n_nodes</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given an initial state distribution, build out two belief roadmaps with</span>
+<span class="sd">    n_nodes, one with edge rewiring and one without, using the non-rewired </span>
+<span class="sd">    roadmap to sample nodes for expansion, then adding each new node to both </span>
+<span class="sd">    roadmaps, and rewiring the rewired roadmap along the way. Both roadmaps</span>
+<span class="sd">    will always contain the same node means.</span>
+
+<span class="sd">    Equivalent to Algorithm II in the paper.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">        save_dir: string</span>
+<span class="sd">            Valid folder for saving data</span>
+<span class="sd">        problem: Problem</span>
+<span class="sd">            Problem class with associated dynamics, constraints, etc.</span>
+<span class="sd">        x_0: np.ndarray</span>
+<span class="sd">            Initial state mean</span>
+<span class="sd">        P_0: np.ndarray</span>
+<span class="sd">            Initial state covariance</span>
+<span class="sd">        graph_lims: tuple</span>
+<span class="sd">            2-tuple of numpy arrays specifying minimum and maximum bounds</span>
+<span class="sd">            of state space</span>
+<span class="sd">        n_states: int</span>
+<span class="sd">            Trajectory length for each edge in roadmap</span>
+<span class="sd">        n_nodes: int</span>
+<span class="sd">            Desired number of nodes in roadmap</span>
+<span class="sd">        edge_controller: EdgeController</span>
+<span class="sd">            Valid edge controller for constructing roadmap</span>
+<span class="sd">        near_cutoff: float</span>
+<span class="sd">            Proximity cutoff for neighboring nodes for edge rewiring</span>
+<span class="sd">        max_nearby: int</span>
+<span class="sd">            Maximum number of neighboring nodes to consider for rewiring</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ---------</span>
+<span class="sd">        rewired_graph: Graph</span>
+<span class="sd">            Belief roadmap constructed with edge rewiring</span>
+<span class="sd">        graph: Graph</span>
+<span class="sd">            Belief roadmap constructed without edge rewiring, with the same</span>
+<span class="sd">            set of node means as `rewired_graph`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Define start node, and create roadmaps</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">({</span><span class="n">Node</span><span class="p">(</span><span class="n">x_0</span><span class="p">,</span> <span class="n">P_0</span><span class="p">,</span> <span class="n">is_start</span><span class="o">=</span><span class="kc">True</span><span class="p">)},</span> <span class="nb">set</span><span class="p">())</span>
+    <span class="n">rewired_graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">({</span><span class="n">Node</span><span class="p">(</span><span class="n">x_0</span><span class="p">,</span> <span class="n">P_0</span><span class="p">,</span> <span class="n">is_start</span><span class="o">=</span><span class="kc">True</span><span class="p">)},</span> <span class="nb">set</span><span class="p">())</span>
+
+    <span class="c1"># Get filenames for saving data</span>
+    <span class="n">rewired_fname_root</span><span class="p">,</span> <span class="n">no_rewire_fname_root</span> <span class="o">=</span> <span class="n">get_root_filenames</span><span class="p">(</span><span class="n">edge_controller</span><span class="p">)</span>
+    <span class="c1"># Continue adding nodes until both roadmaps contain n_nodes</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">rewired_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n_nodes</span><span class="p">:</span>
+        <span class="c1"># Sample w/ bias towards underexplored regions of state space</span>
+        <span class="c1"># based on nodes in graph (NOT rewired_graph)</span>
+        <span class="n">node_mean</span><span class="p">,</span> <span class="n">parent</span> <span class="o">=</span> <span class="n">randomize_candidate_mean</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">graph_lims</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">sample_radius_lims</span><span class="p">)</span>
+        <span class="c1"># Add node to both graphs, and rewire rewired_graph only</span>
+        <span class="n">rewired_graph</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">add_node_and_rewire_roadmap</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">rewired_graph</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">node_mean</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># Save roadmaps</span>
+        <span class="n">save_roadmap</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">rewired_fname_root</span><span class="p">,</span> <span class="n">rewired_graph</span><span class="p">)</span>
+        <span class="n">save_roadmap</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">no_rewire_fname_root</span><span class="p">,</span> <span class="n">graph</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rewired_graph</span><span class="p">,</span> <span class="n">graph</span></div>
+   
+<div class="viewcode-block" id="construct_belief_roadmaps_to_goal_and_rewire"><a class="viewcode-back" href="../index.html#quadrotor_experiment.construct_belief_roadmaps_to_goal_and_rewire">[docs]</a><span class="k">def</span> <span class="nf">construct_belief_roadmaps_to_goal_and_rewire</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">x_0</span><span class="p">,</span> <span class="n">P_0</span><span class="p">,</span> <span class="n">x_f</span><span class="p">,</span> <span class="n">P_f</span><span class="p">,</span> <span class="n">graph_lims</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">n_nodes</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given an initial state distribution and a final goal distribution,</span>
+<span class="sd">    build out two belief roadmaps with n_nodes, one with edge rewiring</span>
+<span class="sd">    and one without, using the non-rewired roadmap to sample nodes for</span>
+<span class="sd">    expansion, then adding each new node to both roadmaps, and rewiring</span>
+<span class="sd">    the rewired roadmap along the way. Both roadmaps will always contain </span>
+<span class="sd">    the same node means. The path to the goal will be rewired to maintain</span>
+<span class="sd">    minimum cost in the rewired roadmap, but the first feasible path to</span>
+<span class="sd">    the goal will be kept in the non-rewired roadmap without updating or</span>
+<span class="sd">    rewiring.</span>
+
+<span class="sd">    Terminates when n_nodes have been added to both roadmaps, so goal</span>
+<span class="sd">    may be reached by both roadmaps, or neither, or the rewired roadmap</span>
+<span class="sd">    only.</span>
+
+<span class="sd">    Equivalent to Algorithm II in the paper, modified for single-query</span>
+<span class="sd">    planning.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">        save_dir: string</span>
+<span class="sd">            Valid folder for saving data</span>
+<span class="sd">        problem: Problem</span>
+<span class="sd">            Problem class with associated dynamics, constraints, etc.</span>
+<span class="sd">        x_0: np.ndarray</span>
+<span class="sd">            Initial state mean</span>
+<span class="sd">        P_0: np.ndarray</span>
+<span class="sd">            Initial state covariance</span>
+<span class="sd">        x_f: np.ndarray</span>
+<span class="sd">            Goal state mean</span>
+<span class="sd">        P_f: np.ndarray</span>
+<span class="sd">            Goal state covariance</span>
+<span class="sd">        graph_lims: tuple</span>
+<span class="sd">            2-tuple of numpy arrays specifying minimum and maximum bounds</span>
+<span class="sd">            of state space</span>
+<span class="sd">        n_states: int</span>
+<span class="sd">            Trajectory length for each edge in roadmap</span>
+<span class="sd">        n_nodes: int</span>
+<span class="sd">            Desired number of nodes in roadmap</span>
+<span class="sd">        edge_controller: EdgeController</span>
+<span class="sd">            Valid edge controller for constructing roadmap</span>
+<span class="sd">        near_cutoff: float</span>
+<span class="sd">            Proximity cutoff for neighboring nodes for edge rewiring</span>
+<span class="sd">        max_nearby: int</span>
+<span class="sd">            Maximum number of neighboring nodes to consider for rewiring</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ---------</span>
+<span class="sd">        rewired_graph: Graph</span>
+<span class="sd">            Belief roadmap constructed with edge rewiring</span>
+<span class="sd">        graph: Graph</span>
+<span class="sd">            Belief roadmap constructed without edge rewiring, with the same</span>
+<span class="sd">            set of node means as `rewired_graph`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Define start and goal nodes</span>
+    <span class="n">start_node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">x_0</span><span class="p">,</span> <span class="n">P_0</span><span class="p">,</span> <span class="n">is_start</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">goal_node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">x_f</span><span class="p">,</span> <span class="n">P_f</span><span class="p">,</span> <span class="n">is_goal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Initialize graph and rewired graph with only start and goal</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">({</span><span class="n">start_node</span><span class="p">,</span> <span class="n">goal_node</span><span class="p">},</span> <span class="nb">set</span><span class="p">())</span>
+    <span class="n">rewired_graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">),</span> <span class="nb">set</span><span class="p">())</span>
+
+    <span class="c1"># Start node is newest, goal is not reached, and</span>
+    <span class="c1"># haven&#39;t yet checked for a path from start to goal</span>
+    <span class="n">newest_node</span> <span class="o">=</span> <span class="n">start_node</span>
+    <span class="n">goal_reached</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">goal_reached_no_rewire</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">goal_checked</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># Get root filenames for saving data</span>
+    <span class="n">rewired_fname_root</span><span class="p">,</span> <span class="n">no_rewire_fname_root</span> <span class="o">=</span> <span class="n">get_root_filenames</span><span class="p">(</span><span class="n">edge_controller</span><span class="p">)</span>
+
+    <span class="c1"># Continue adding nodes until graph reaches n_nodes</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">rewired_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n_nodes</span><span class="p">:</span>
+        <span class="c1"># If haven&#39;t checked for a path from the newest node</span>
+        <span class="c1"># to the goal, check for a path (in order to refine</span>
+        <span class="c1"># the path to the goal node)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">goal_checked</span><span class="p">:</span>
+            <span class="n">node_mean</span> <span class="o">=</span> <span class="n">goal_node</span><span class="o">.</span><span class="n">mean</span>
+            <span class="n">new_rewired_graph</span><span class="p">,</span> <span class="n">new_graph</span><span class="p">,</span> <span class="n">success</span><span class="p">,</span> <span class="n">new_node</span> <span class="o">=</span> <span class="n">add_node_and_rewire_roadmap</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">rewired_graph</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(),</span> <span class="n">graph</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(),</span> <span class="n">node_mean</span><span class="p">,</span> <span class="n">newest_node</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+                <span class="c1"># If goal hasn&#39;t yet been reached, accept path to goal</span>
+                <span class="c1"># as long as goal is reached with covariance smaller</span>
+                <span class="c1"># than that at goal node</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">goal_reached</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">check_psd</span><span class="p">(</span><span class="n">goal_node</span><span class="o">.</span><span class="n">covariance</span><span class="o">-</span><span class="n">new_node</span><span class="o">.</span><span class="n">covariance</span><span class="p">):</span>
+                        <span class="n">rewired_graph</span> <span class="o">=</span> <span class="n">new_rewired_graph</span>
+                        <span class="n">goal_reached</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="c1"># Save data</span>
+                        <span class="n">save_roadmap</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">rewired_fname_root</span><span class="p">,</span> <span class="n">rewired_graph</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># If goal has already been reached, accept new path to</span>
+                    <span class="c1"># goal only if new path has smaller funnel tail at goal</span>
+                    <span class="c1"># than previous path</span>
+                    <span class="n">current_goal_node</span> <span class="o">=</span> <span class="n">rewired_graph</span><span class="o">.</span><span class="n">get_goal_node</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">new_node</span><span class="o">.</span><span class="n">covariance</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">current_goal_node</span><span class="o">.</span><span class="n">covariance</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">():</span>
+                        <span class="n">rewired_graph</span> <span class="o">=</span> <span class="n">new_rewired_graph</span>
+                        <span class="c1"># Save data</span>
+                        <span class="n">save_roadmap</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">rewired_fname_root</span><span class="p">,</span> <span class="n">rewired_graph</span><span class="p">)</span>
+            <span class="c1"># If goal hasn&#39;t been reached in graph without rewiring,</span>
+            <span class="c1"># check for a path to goal. But if the goal has been</span>
+            <span class="c1"># reached, keep the existing path without updating.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">goal_reached_no_rewire</span><span class="p">:</span>
+                <span class="n">newest_node_no_rewire</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">look_up_by_mean</span><span class="p">(</span><span class="n">newest_node</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+                <span class="n">new_graph</span><span class="p">,</span> <span class="n">success</span> <span class="o">=</span> <span class="n">add_node_to_roadmap</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">graph</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(),</span> <span class="n">node_mean</span><span class="p">,</span> <span class="n">newest_node_no_rewire</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+                    <span class="n">new_node</span> <span class="o">=</span> <span class="n">new_graph</span><span class="o">.</span><span class="n">get_goal_node</span><span class="p">()</span>
+                    <span class="c1"># Only accept path if goal is reached with covariance</span>
+                    <span class="c1"># smaller than that at goal node</span>
+                    <span class="k">if</span> <span class="n">check_psd</span><span class="p">(</span><span class="n">goal_node</span><span class="o">.</span><span class="n">covariance</span><span class="o">-</span><span class="n">new_node</span><span class="o">.</span><span class="n">covariance</span><span class="p">):</span>
+                        <span class="n">graph</span> <span class="o">=</span> <span class="n">new_graph</span>
+                        <span class="n">goal_reached_no_rewire</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="c1"># Save data</span>
+                        <span class="n">save_roadmap</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">no_rewire_fname_root</span><span class="p">,</span> <span class="n">graph</span><span class="p">)</span>
+            <span class="n">goal_checked</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># If path to goal is already up-to-date, try adding</span>
+            <span class="c1"># another node to rewired_graph (with rewiring) and to </span>
+            <span class="c1"># graph (without rewiring)</span>
+            <span class="n">node_mean</span><span class="p">,</span> <span class="n">parent</span> <span class="o">=</span> <span class="n">randomize_candidate_mean</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">graph_lims</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">sample_radius_lims</span><span class="p">)</span>
+            <span class="n">rewired_graph</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">success</span><span class="p">,</span> <span class="n">new_node</span> <span class="o">=</span> <span class="n">add_node_and_rewire_roadmap</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">rewired_graph</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">node_mean</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">success</span><span class="p">:</span> <span class="c1"># Need to see if we can now steer to goal</span>
+                <span class="n">goal_checked</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">newest_node</span> <span class="o">=</span> <span class="n">new_node</span>
+                <span class="c1"># Save data</span>
+                <span class="n">save_roadmap</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">rewired_fname_root</span><span class="p">,</span> <span class="n">rewired_graph</span><span class="p">)</span>
+                <span class="n">save_roadmap</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">no_rewire_fname_root</span><span class="p">,</span> <span class="n">graph</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rewired_graph</span><span class="p">,</span> <span class="n">graph</span></div>
+
+<div class="viewcode-block" id="single_query_experimental_trial"><a class="viewcode-back" href="../index.html#quadrotor_experiment.single_query_experimental_trial">[docs]</a><span class="k">def</span> <span class="nf">single_query_experimental_trial</span><span class="p">(</span><span class="n">random_seed</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">x_0</span><span class="p">,</span> <span class="n">P_0</span><span class="p">,</span> <span class="n">x_f</span><span class="p">,</span> <span class="n">P_f</span><span class="p">,</span> <span class="n">graph_lims</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">n_nodes</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Construct two belief roadmaps for a single-query planning experiment, one</span>
+<span class="sd">    with edge rewiring, and one without. Wrapper around :func:`construct_belief_roadmaps_to_goal_and_rewire`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_seed</span><span class="p">)</span>
+    <span class="n">rewired_graph</span><span class="p">,</span> <span class="n">graph</span> <span class="o">=</span> <span class="n">construct_belief_roadmaps_to_goal_and_rewire</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">x_0</span><span class="p">,</span> <span class="n">P_0</span><span class="p">,</span> <span class="n">x_f</span><span class="p">,</span> <span class="n">P_f</span><span class="p">,</span> <span class="n">graph_lims</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">n_nodes</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="multi_query_experimental_trial"><a class="viewcode-back" href="../index.html#quadrotor_experiment.multi_query_experimental_trial">[docs]</a><span class="k">def</span> <span class="nf">multi_query_experimental_trial</span><span class="p">(</span><span class="n">random_seed</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">x_0</span><span class="p">,</span> <span class="n">P_0</span><span class="p">,</span> <span class="n">graph_lims</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">n_nodes</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Construct two belief roadmaps for a multi-query planning experiment, one</span>
+<span class="sd">    with edge rewiring, and one without. Wrapper around :func:`construct_belief_roadmaps_and_rewire`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_seed</span><span class="p">)</span>
+    <span class="n">rewired_graph</span><span class="p">,</span> <span class="n">graph</span> <span class="o">=</span> <span class="n">construct_belief_roadmaps_and_rewire</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">x_0</span><span class="p">,</span> <span class="n">P_0</span><span class="p">,</span> <span class="n">graph_lims</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">n_nodes</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="single_query_experiment"><a class="viewcode-back" href="../index.html#quadrotor_experiment.single_query_experiment">[docs]</a><span class="k">def</span> <span class="nf">single_query_experiment</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">x_0</span><span class="p">,</span> <span class="n">P_0</span><span class="p">,</span> <span class="n">x_f</span><span class="p">,</span> <span class="n">P_f</span><span class="p">,</span> <span class="n">graph_lims</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">n_nodes</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">,</span> <span class="n">n_trials</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run multiple trials for single-query experiment in parallel, with baseline</span>
+<span class="sd">    and robust sigma-point edge controllers.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">        save_dir: string</span>
+<span class="sd">            Parent directory to save data to</span>
+<span class="sd">        problem: Problem</span>
+<span class="sd">            Problem class with dynamics, constraints, and parameters</span>
+<span class="sd">        x_0: np.ndarray</span>
+<span class="sd">            Initial state mean</span>
+<span class="sd">        P_0: np.ndarray</span>
+<span class="sd">            Initial state covariance</span>
+<span class="sd">        x_f: np.ndarray</span>
+<span class="sd">            Final state mean</span>
+<span class="sd">        P_f: np.ndarray</span>
+<span class="sd">            Final state covariance</span>
+<span class="sd">        graph_lims: tuple</span>
+<span class="sd">            2-tuple with minimum and maximum bounds of state space</span>
+<span class="sd">        n_states: int</span>
+<span class="sd">            Trajectory length for edges in belief roadmap</span>
+<span class="sd">        n_nodes: int</span>
+<span class="sd">            Number of nodes for belief roadmap</span>
+<span class="sd">        near_cutoff: float</span>
+<span class="sd">            Proximity cutoff for neighboring nodes for edge rewiring</span>
+<span class="sd">        max_nearby: int</span>
+<span class="sd">            Maximum number of nearby nodes to consider for rewiring</span>
+<span class="sd">        n_trials: int</span>
+<span class="sd">            Number of experimental trials to run</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">edge_controllers</span> <span class="o">=</span> <span class="p">(</span><span class="n">EdgeController</span><span class="o">.</span><span class="n">BASELINE</span><span class="p">,</span> <span class="n">EdgeController</span><span class="o">.</span><span class="n">ROBUST_SIGMA_POINT</span><span class="p">)</span>
+    <span class="n">trial_processes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_trials</span><span class="p">):</span>
+        <span class="n">trial_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;trial_</span><span class="si">{</span><span class="n">trial</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">trial_dir</span><span class="p">)</span>
+
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">trial_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;problem.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;wb&quot;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">edge_controller</span> <span class="ow">in</span> <span class="n">edge_controllers</span><span class="p">:</span>
+            <span class="n">trial_process</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">single_query_experimental_trial</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">trial</span><span class="p">,</span> <span class="n">trial_dir</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">x_0</span><span class="p">,</span> <span class="n">P_0</span><span class="p">,</span> <span class="n">x_f</span><span class="p">,</span> <span class="n">P_f</span><span class="p">,</span> <span class="n">graph_lims</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">n_nodes</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">))</span>
+            <span class="n">trial_processes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trial_process</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">trial_process</span> <span class="ow">in</span> <span class="n">trial_processes</span><span class="p">:</span>
+        <span class="n">trial_process</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">trial_process</span> <span class="ow">in</span> <span class="n">trial_processes</span><span class="p">:</span>
+        <span class="n">trial_process</span><span class="o">.</span><span class="n">join</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="multi_query_experiment"><a class="viewcode-back" href="../index.html#quadrotor_experiment.multi_query_experiment">[docs]</a><span class="k">def</span> <span class="nf">multi_query_experiment</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">x_0</span><span class="p">,</span> <span class="n">P_0</span><span class="p">,</span> <span class="n">graph_lims</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">n_nodes</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run multiple trials for multi-query experiment in parallel, with baseline</span>
+<span class="sd">    and robust sigma-point edge controllers.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">        save_dir: string</span>
+<span class="sd">            Parent directory to save data to</span>
+<span class="sd">        problem: Problem</span>
+<span class="sd">            Problem class with dynamics, constraints, and parameters</span>
+<span class="sd">        x_0: np.ndarray</span>
+<span class="sd">            Initial state mean</span>
+<span class="sd">        P_0: np.ndarray</span>
+<span class="sd">            Initial state covariance</span>
+<span class="sd">        graph_lims: tuple</span>
+<span class="sd">            2-tuple with minimum and maximum bounds of state space</span>
+<span class="sd">        n_states: int</span>
+<span class="sd">            Trajectory length for edges in belief roadmap</span>
+<span class="sd">        n_nodes: int</span>
+<span class="sd">            Number of nodes for belief roadmap</span>
+<span class="sd">        near_cutoff: float</span>
+<span class="sd">            Proximity cutoff for neighboring nodes for edge rewiring</span>
+<span class="sd">        max_nearby: int</span>
+<span class="sd">            Maximum number of nearby nodes to consider for rewiring</span>
+<span class="sd">        n_trials: int</span>
+<span class="sd">            Number of experimental trials to run</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">edge_controllers</span> <span class="o">=</span> <span class="p">(</span><span class="n">EdgeController</span><span class="o">.</span><span class="n">BASELINE</span><span class="p">,</span> <span class="n">EdgeController</span><span class="o">.</span><span class="n">ROBUST_SIGMA_POINT</span><span class="p">)</span>
+    <span class="n">trial_processes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;problem.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;wb&quot;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">edge_controller</span> <span class="ow">in</span> <span class="n">edge_controllers</span><span class="p">:</span>
+        <span class="n">trial_process</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">multi_query_experimental_trial</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">x_0</span><span class="p">,</span> <span class="n">P_0</span><span class="p">,</span> <span class="n">graph_lims</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">n_nodes</span><span class="p">,</span> <span class="n">edge_controller</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">))</span>
+        <span class="n">trial_processes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trial_process</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">trial_process</span> <span class="ow">in</span> <span class="n">trial_processes</span><span class="p">:</span>
+        <span class="n">trial_process</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">trial_process</span> <span class="ow">in</span> <span class="n">trial_processes</span><span class="p">:</span>
+        <span class="n">trial_process</span><span class="o">.</span><span class="n">join</span><span class="p">()</span></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c1">#TODO move to new file, put parameters in yaml</span>
+    <span class="c1"># Multi-query experiments</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">pardir</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">pardir</span><span class="p">)</span>
+    <span class="n">quad_results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">parent</span><span class="p">),</span> <span class="s2">&quot;paper_results&quot;</span><span class="p">)</span>
+    <span class="n">multi_query_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">quad_results_dir</span><span class="p">,</span> <span class="s2">&quot;multi_query_results_11-4-24&quot;</span><span class="p">)</span>
+    <span class="n">x_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">P_0</span> <span class="o">=</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+    <span class="n">problem</span> <span class="o">=</span> <span class="n">Quadrotor2DGRF</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">obstacles</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">)</span>
+    <span class="n">graph_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="o">-</span><span class="mi">100</span><span class="p">])</span>
+    <span class="n">graph_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span>
+    <span class="n">graph_lims</span> <span class="o">=</span> <span class="p">(</span><span class="n">graph_min</span><span class="p">,</span> <span class="n">graph_max</span><span class="p">)</span>
+    <span class="n">n_states</span> <span class="o">=</span> <span class="mi">6</span>
+    <span class="n">n_nodes</span> <span class="o">=</span> <span class="mi">500</span>
+    <span class="n">near_cutoff</span> <span class="o">=</span> <span class="mi">36</span>
+    <span class="n">max_nearby</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="c1">#multi_query_experiment(multi_query_dir, problem, x_0, P_0, graph_lims, n_states, n_nodes, near_cutoff, max_nearby)</span>
+
+    <span class="c1"># Single-query experiments</span>
+    <span class="n">single_query_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">quad_results_dir</span><span class="p">,</span> <span class="s2">&quot;single_query_results_11-4-24&quot;</span><span class="p">)</span>
+    <span class="n">x_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">P_0</span> <span class="o">=</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+    <span class="n">x_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">P_f</span> <span class="o">=</span> <span class="mf">0.2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+    <span class="n">problem</span> <span class="o">=</span> <span class="n">Quadrotor2DGRF</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">obstacles</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+    <span class="n">graph_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="o">-</span><span class="mi">100</span><span class="p">])</span>
+    <span class="n">graph_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span>
+    <span class="n">graph_lims</span> <span class="o">=</span> <span class="p">(</span><span class="n">graph_min</span><span class="p">,</span> <span class="n">graph_max</span><span class="p">)</span>
+    <span class="n">n_states</span> <span class="o">=</span> <span class="mi">6</span>
+    <span class="n">n_nodes</span> <span class="o">=</span> <span class="mi">200</span>
+    <span class="n">near_cutoff</span> <span class="o">=</span> <span class="mi">36</span>
+    <span class="n">max_nearby</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">n_trials</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">single_query_experiment</span><span class="p">(</span><span class="n">single_query_dir</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">x_0</span><span class="p">,</span> <span class="n">P_0</span><span class="p">,</span> <span class="n">x_f</span><span class="p">,</span> <span class="n">P_f</span><span class="p">,</span> <span class="n">graph_lims</span><span class="p">,</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">n_nodes</span><span class="p">,</span> <span class="n">near_cutoff</span><span class="p">,</span> <span class="n">max_nearby</span><span class="p">,</span> <span class="n">n_trials</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Alex Rose.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
