@@ -2,7 +2,7 @@ import copy
 
 import numpy as np
 
-from math_utils import check_psd
+from src.utils.math_utils import check_psd
 
 class Node:
     """

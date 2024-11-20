@@ -6,8 +6,8 @@ import cvxpy as cp
 import scipy
 import mosek
 
-from graph import *
-from math_utils import *
+from src.graph import *
+from src.utils.math_utils import *
 
 class EdgeController(Enum):
     """

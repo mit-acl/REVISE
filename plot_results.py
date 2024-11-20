@@ -1,5 +1,5 @@
 from graph import Graph, Edge, Node
-from quadrotor_plotting import plot_quad_chart, confidence_ellipse
+from src.utils.plot_utils import plot_quad_chart, confidence_ellipse
 
 import copy
 from quadrotor_experiment import *

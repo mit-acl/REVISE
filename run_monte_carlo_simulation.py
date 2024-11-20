@@ -5,15 +5,15 @@ import logging
 
 import numpy as np
 
-from quadrotor_experiment import get_roadmap_edge, get_nearest_nodes, get_root_filenames, save_roadmap
-from covariance_steering import EdgeController
-from graph import Node, Edge, Graph
+from src.roadmap_generation import get_roadmap_edge, get_nearest_nodes
+from src.utils.io_utils import get_root_filenames, save_roadmap
+from src.covariance_steering import EdgeController
+from src.graph import Node, Edge, Graph
 
 def parallelize_random_goal_generation():
-    #TODO cleanup
     parent = os.path.join(os.path.join(__file__, os.pardir), os.pardir)
     quad_results_dir = os.path.join(os.path.abspath(parent), "paper_results")
-    multi_query_updated_dir = os.path.join(quad_results_dir, "multi_query_results_11-4-24")
+    multi_query_updated_dir = os.path.join(quad_results_dir, "multi_query_results")
     n_graph_nodes = 500
     n_goals = 100
     max_cutoff = 36
@@ -36,7 +36,7 @@ def parallelize_random_goal_generation():
 def parallelize_multi_query_simulation():
     parent = os.path.join(os.path.join(__file__, os.pardir), os.pardir)
     quad_results_dir = os.path.join(os.path.abspath(parent), "paper_results")
-    multi_query_updated_dir = os.path.join(quad_results_dir, "multi_query_results_11-4-24")
+    multi_query_updated_dir = os.path.join(quad_results_dir, "multi_query_results")
     n_mc_trials = 200
     n_graph_nodes = 500
     n_goals = 100
@@ -59,7 +59,7 @@ def parallelize_single_query_simulation():
     #TODO cleanup
     parent = os.path.join(os.path.join(__file__, os.pardir), os.pardir)
     quad_results_dir = os.path.join(os.path.abspath(parent), "paper_results")
-    single_query_updated_dir = os.path.join(quad_results_dir, "single_query_results_11-4-24")
+    single_query_updated_dir = os.path.join(quad_results_dir, "single_query_results")
     n_trials = 20
     n_mc_trials = 200
     n_graph_nodes = 200
@@ -347,20 +347,9 @@ def simulate_graph_forward_monte_carlo(save_dir, x_fname_root, u_fname_root, gra
         np.savetxt(os.path.join(save_dir, f"{u_fname_root}_{i}.csv"), u_mc_traj, delimiter=',')
 
 if __name__ == '__main__':
-    parent = os.path.join(os.path.join(__file__, os.pardir), os.pardir)
-    quad_results_dir = os.path.join(os.path.abspath(parent), "paper_results")
-    multi_query_dir = os.path.join(quad_results_dir, "multi_query_results")
-    multi_query_updated_dir = os.path.join(quad_results_dir, "multi_query_results_updated")
-    single_query_dir = os.path.join(quad_results_dir, "single_query_results")
-    single_query_corrected_dir = os.path.join(quad_results_dir, "single_query_results_updated")
-    test_dir = os.path.join(os.path.abspath(parent), "test")
-    artifacts_dir = os.path.join(test_dir, "artifacts")
-    single_query_mc_dir = os.path.join(artifacts_dir, "single_query_mc")
-    multi_query_mc_dir = os.path.join(artifacts_dir, "multi_query_mc")
     n_trials = 20
     n_mc_trials = 200
     n_graph_nodes = 200
-    n_goals = 5#100
     max_cutoff = 36
     max_nearby = 5
     n_states = 6

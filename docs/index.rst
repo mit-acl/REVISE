@@ -5,6 +5,10 @@
 
 REVISE
 =====================================================================
+REVISE is a covariance-steering-based belief roadmapping algorithm
+for linear systems affected by a spatially varying and state-dependent
+disturbance represented by a Gaussian random field.
+
 Graph Representation
 ----------------------
 .. automodule:: graph 
@@ -13,12 +17,16 @@ Graph Representation
 
 Math Utils
 ------------
-.. automodule:: math_utils 
+.. automodule:: utils/math_utils 
    :members:
    :show-inheritance:
 
 Quadrotor
 ----------
+.. automodule:: problem
+   :members:
+   :show-inheritance:
+
 .. automodule:: quadrotor_problem
    :members:
    :show-inheritance:
@@ -31,7 +39,7 @@ Covariance Steering
 
 Belief Roadmap Generation
 ---------------------------
-.. automodule:: quadrotor_experiment
+.. automodule:: roadmap_generation
    :members:
    :show-inheritance:
 
