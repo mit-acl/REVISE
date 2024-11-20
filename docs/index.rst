@@ -11,35 +11,35 @@ disturbance represented by a Gaussian random field.
 
 Graph Representation
 ----------------------
-.. automodule:: graph 
+.. automodule:: src.graph 
    :members:
    :show-inheritance:
 
 Math Utils
 ------------
-.. automodule:: utils/math_utils 
+.. automodule:: src.utils.math_utils 
    :members:
    :show-inheritance:
 
 Quadrotor
 ----------
-.. automodule:: problem
+.. automodule:: src.problem
    :members:
    :show-inheritance:
 
-.. automodule:: quadrotor_problem
+.. automodule:: src.quadrotor_problem
    :members:
    :show-inheritance:
 
 Covariance Steering
 ----------------------
-.. automodule:: covariance_steering
+.. automodule:: src.covariance_steering
    :members:
    :show-inheritance:
 
 Belief Roadmap Generation
 ---------------------------
-.. automodule:: roadmap_generation
+.. automodule:: src.roadmap_generation
    :members:
    :show-inheritance:
 
