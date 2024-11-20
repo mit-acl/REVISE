@@ -18,5 +18,8 @@ Replicating paper results:
 ## Documentation and Website
 Documentation is auto-generated based on the source code and hosted by <a href="https://revise.readthedocs.io/en/latest/">Read the Docs</a>. Our project page is online at <a href="https://acl.mit.edu/REVISE/">https://acl.mit.edu/REVISE/</a>.
 
-# Website License
+## Acknowledgements
+This research was supported by the National Science Foundation Graduate Research Fellowship under grant no. 2141064 and by the Draper Scholars program.
+
+## Website License
 <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
