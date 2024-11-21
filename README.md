@@ -1,6 +1,7 @@
 # REVISE: Robust Probabilistic Motion Planning in a Gaussian Random Field
 
 ## Citation
+If you use REVISE, please cite our paper ([pdf](https://arxiv.org/abs/2411.13369))
 ```bibtex
 @misc{rose2024reviserobustprobabilisticmotion,
       title={REVISE: Robust Probabilistic Motion Planning in a Gaussian Random Field}, 
