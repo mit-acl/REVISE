@@ -1,7 +1,17 @@
 # REVISE: Robust Probabilistic Motion Planning in a Gaussian Random Field
 
 ## Citation
-arXiv link coming soon!
+```bibtex
+@misc{rose2024reviserobustprobabilisticmotion,
+      title={REVISE: Robust Probabilistic Motion Planning in a Gaussian Random Field}, 
+      author={Alex Rose and Naman Aggarwal and Christopher Jewison and Jonathan P. How},
+      year={2024},
+      eprint={2411.13369},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2411.13369}, 
+}
+```
 
 ## General Setup
 REVISE has been tested with Python 3.12.7 on MacOS and on Ubuntu 20.04.
